@@ -1,0 +1,1496 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ADA Voice Stack — Calculadora Interactiva · SimpliRoute</title>
+<style>
+:root {
+  --bg-0: #050810;
+  --bg-1: #0a0f1c;
+  --bg-2: #111827;
+  --bg-3: #1a2236;
+  --border: rgba(255, 255, 255, 0.08);
+  --border-strong: rgba(255, 255, 255, 0.16);
+  --text-0: #f3f4f6;
+  --text-1: #d1d5db;
+  --text-2: #9ca3af;
+  --text-3: #6b7280;
+  --accent-cyan: #06b6d4;
+  --accent-blue: #3b82f6;
+  --accent-purple: #a855f7;
+  --accent-green: #10b981;
+  --accent-yellow: #eab308;
+  --accent-orange: #f97316;
+  --accent-red: #ef4444;
+  --accent-pink: #ec4899;
+  --grad-1: linear-gradient(135deg, #06b6d4 0%, #3b82f6 50%, #a855f7 100%);
+  --grad-2: linear-gradient(135deg, #10b981 0%, #06b6d4 100%);
+  --grad-3: linear-gradient(135deg, #f97316 0%, #ec4899 100%);
+  --grad-warm: linear-gradient(135deg, #eab308 0%, #f97316 100%);
+  --shadow-lg: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+  --shadow-glow: 0 0 40px rgba(6, 182, 212, 0.3);
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Inter", Roboto, sans-serif;
+  background: var(--bg-0);
+  color: var(--text-0);
+  line-height: 1.6;
+  min-height: 100vh;
+  overflow-x: hidden;
+  background-image:
+    radial-gradient(at 20% 10%, rgba(6, 182, 212, 0.12) 0px, transparent 50%),
+    radial-gradient(at 80% 90%, rgba(168, 85, 247, 0.10) 0px, transparent 50%),
+    radial-gradient(at 50% 50%, rgba(59, 130, 246, 0.06) 0px, transparent 50%);
+  background-attachment: fixed;
+}
+
+/* ============ HERO ============ */
+.hero {
+  padding: 80px 24px 60px;
+  text-align: center;
+  position: relative;
+}
+.hero::before {
+  content: "";
+  position: absolute;
+  top: 0; left: 50%;
+  transform: translateX(-50%);
+  width: 600px; height: 600px;
+  background: radial-gradient(circle, rgba(6, 182, 212, 0.15) 0%, transparent 70%);
+  z-index: -1;
+}
+.hero-badge {
+  display: inline-block;
+  padding: 6px 14px;
+  border: 1px solid var(--border-strong);
+  border-radius: 100px;
+  background: rgba(255, 255, 255, 0.03);
+  backdrop-filter: blur(10px);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-1);
+  margin-bottom: 24px;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+}
+.hero-badge .pulse {
+  display: inline-block;
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  background: var(--accent-green);
+  margin-right: 8px;
+  box-shadow: 0 0 12px var(--accent-green);
+  animation: pulse 2s ease-in-out infinite;
+}
+@keyframes pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.5; transform: scale(0.9); }
+}
+.hero h1 {
+  font-size: clamp(36px, 6vw, 64px);
+  font-weight: 800;
+  line-height: 1.05;
+  letter-spacing: -0.03em;
+  margin-bottom: 16px;
+  background: var(--grad-1);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.hero h1 .ada-mark {
+  display: inline-block;
+  padding: 4px 14px;
+  border-radius: 12px;
+  background: var(--grad-1);
+  -webkit-text-fill-color: white;
+  font-weight: 900;
+}
+.hero .sub {
+  font-size: clamp(16px, 2vw, 20px);
+  color: var(--text-2);
+  max-width: 720px;
+  margin: 0 auto 12px;
+}
+.hero .meta {
+  font-size: 13px;
+  color: var(--text-3);
+}
+
+/* ============ CONTAINER ============ */
+.container {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 0 24px;
+}
+
+/* ============ SECTION ============ */
+section {
+  padding: 60px 0;
+  border-top: 1px solid var(--border);
+}
+.section-header {
+  margin-bottom: 40px;
+}
+.section-header h2 {
+  font-size: clamp(24px, 4vw, 36px);
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  margin-bottom: 8px;
+}
+.section-header p {
+  font-size: 15px;
+  color: var(--text-2);
+  max-width: 720px;
+}
+.section-header .num {
+  display: inline-block;
+  font-family: "JetBrains Mono", "SF Mono", monospace;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--accent-cyan);
+  padding: 2px 8px;
+  border: 1px solid rgba(6, 182, 212, 0.3);
+  border-radius: 6px;
+  background: rgba(6, 182, 212, 0.08);
+  margin-bottom: 12px;
+}
+
+/* ============ PIPELINE VISUAL ============ */
+.pipeline {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+.pipeline-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 12px;
+  align-items: stretch;
+}
+.pipeline-arrow {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  color: var(--text-3);
+  font-size: 18px;
+  margin: -8px 0;
+}
+.component {
+  background: rgba(255, 255, 255, 0.025);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 18px;
+  backdrop-filter: blur(8px);
+  transition: all 0.2s;
+  position: relative;
+  overflow: hidden;
+}
+.component::before {
+  content: "";
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 2px;
+  background: var(--accent-cyan);
+  opacity: 0.6;
+}
+.component.cat-stt::before { background: var(--accent-blue); }
+.component.cat-llm::before { background: var(--accent-purple); }
+.component.cat-tts::before { background: var(--accent-pink); }
+.component.cat-tel::before { background: var(--accent-green); }
+.component.cat-vad::before { background: var(--accent-yellow); }
+.component.cat-orch::before { background: var(--accent-orange); }
+.component:hover {
+  border-color: var(--border-strong);
+  transform: translateY(-2px);
+  background: rgba(255, 255, 255, 0.04);
+}
+.component .cat {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  font-weight: 700;
+  color: var(--text-3);
+  margin-bottom: 6px;
+}
+.component .name {
+  font-size: 16px;
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+.component .price {
+  font-family: "JetBrains Mono", "SF Mono", monospace;
+  font-size: 13px;
+  color: var(--accent-green);
+  font-weight: 600;
+}
+.component .meta-line {
+  font-size: 11px;
+  color: var(--text-3);
+  font-family: "JetBrains Mono", "SF Mono", monospace;
+  margin-top: 4px;
+}
+.component.recommended {
+  border-color: rgba(6, 182, 212, 0.4);
+  background: rgba(6, 182, 212, 0.04);
+  box-shadow: 0 0 30px rgba(6, 182, 212, 0.1);
+}
+.component.recommended::after {
+  content: "★ RECOMENDADO";
+  position: absolute;
+  top: 8px; right: 8px;
+  font-size: 9px;
+  font-weight: 700;
+  padding: 2px 6px;
+  border-radius: 4px;
+  background: var(--grad-1);
+  color: white;
+  letter-spacing: 0.5px;
+}
+
+/* ============ CALCULATOR ============ */
+.calc-wrap {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 24px;
+}
+@media (min-width: 1024px) {
+  .calc-wrap { grid-template-columns: 1.4fr 1fr; }
+}
+
+.calc-card {
+  background: rgba(255, 255, 255, 0.025);
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  padding: 28px;
+  backdrop-filter: blur(12px);
+}
+
+.calc-tabs {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 24px;
+  padding: 4px;
+  background: rgba(0, 0, 0, 0.3);
+  border-radius: 12px;
+  border: 1px solid var(--border);
+}
+.calc-tab {
+  flex: 1;
+  padding: 10px 14px;
+  border: none;
+  background: transparent;
+  color: var(--text-2);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  border-radius: 8px;
+  transition: all 0.15s;
+  font-family: inherit;
+}
+.calc-tab:hover { color: var(--text-0); }
+.calc-tab.active {
+  background: var(--grad-1);
+  color: white;
+  box-shadow: 0 4px 16px rgba(6, 182, 212, 0.3);
+}
+.calc-tab small {
+  display: block;
+  font-size: 10px;
+  font-weight: 500;
+  opacity: 0.8;
+  margin-top: 2px;
+}
+
+.calc-tab-desc {
+  font-size: 13px;
+  color: var(--text-2);
+  margin-bottom: 24px;
+  padding: 12px 14px;
+  background: rgba(6, 182, 212, 0.06);
+  border: 1px solid rgba(6, 182, 212, 0.15);
+  border-radius: 8px;
+}
+
+/* minutes slider */
+.slider-group {
+  margin-bottom: 24px;
+}
+.slider-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 8px;
+}
+.slider-label {
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--text-2);
+  font-weight: 700;
+}
+.slider-value {
+  font-family: "JetBrains Mono", monospace;
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--accent-cyan);
+}
+.slider-input {
+  width: 100%;
+  -webkit-appearance: none;
+  height: 6px;
+  background: var(--bg-3);
+  border-radius: 3px;
+  outline: none;
+  border: 1px solid var(--border);
+}
+.slider-input::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 20px; height: 20px;
+  border-radius: 50%;
+  background: var(--grad-1);
+  cursor: pointer;
+  box-shadow: 0 0 12px rgba(6, 182, 212, 0.5);
+}
+.slider-input::-moz-range-thumb {
+  width: 20px; height: 20px;
+  border-radius: 50%;
+  background: var(--grad-1);
+  cursor: pointer;
+  border: none;
+}
+.slider-ticks {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 6px;
+  font-size: 11px;
+  color: var(--text-3);
+  font-family: "JetBrains Mono", monospace;
+}
+
+/* component selector */
+.comp-row {
+  display: grid;
+  grid-template-columns: 130px 1fr;
+  gap: 12px;
+  padding: 14px 0;
+  border-bottom: 1px solid var(--border);
+  align-items: center;
+}
+.comp-row:last-child { border-bottom: none; }
+.comp-name {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-1);
+}
+.comp-name small {
+  display: block;
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--text-3);
+  margin-top: 2px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+select.comp-select {
+  background: var(--bg-2);
+  border: 1px solid var(--border);
+  color: var(--text-0);
+  padding: 8px 12px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-family: inherit;
+  cursor: pointer;
+  width: 100%;
+}
+select.comp-select:focus {
+  outline: none;
+  border-color: var(--accent-cyan);
+}
+select.comp-select option {
+  background: var(--bg-2);
+  color: var(--text-0);
+}
+
+/* results */
+.results {
+  position: sticky;
+  top: 20px;
+  align-self: start;
+}
+.result-main {
+  background: linear-gradient(135deg, rgba(6, 182, 212, 0.08), rgba(168, 85, 247, 0.08));
+  border: 1px solid rgba(6, 182, 212, 0.25);
+  border-radius: 18px;
+  padding: 28px;
+  text-align: center;
+  margin-bottom: 16px;
+  box-shadow: var(--shadow-glow);
+}
+.result-main .label {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--text-2);
+  margin-bottom: 8px;
+  font-weight: 700;
+}
+.result-main .value {
+  font-family: "JetBrains Mono", monospace;
+  font-size: 48px;
+  font-weight: 800;
+  background: var(--grad-1);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  letter-spacing: -0.02em;
+  line-height: 1;
+}
+.result-main .suffix {
+  font-size: 16px;
+  color: var(--text-2);
+  font-weight: 500;
+  margin-top: 4px;
+}
+.result-stats {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+.stat {
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 16px;
+  text-align: center;
+}
+.stat .stat-label {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  color: var(--text-3);
+  margin-bottom: 6px;
+  font-weight: 700;
+}
+.stat .stat-value {
+  font-family: "JetBrains Mono", monospace;
+  font-size: 18px;
+  font-weight: 700;
+}
+.stat .stat-value.good { color: var(--accent-green); }
+.stat .stat-value.warn { color: var(--accent-yellow); }
+.stat .stat-value.bad { color: var(--accent-red); }
+.breakdown {
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 18px;
+}
+.breakdown h3 {
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  color: var(--text-2);
+  margin-bottom: 14px;
+  font-weight: 700;
+}
+.breakdown-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 0;
+  font-size: 13px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+}
+.breakdown-row:last-child { border-bottom: none; }
+.breakdown-row .name { color: var(--text-1); }
+.breakdown-row .price {
+  font-family: "JetBrains Mono", monospace;
+  font-weight: 600;
+  color: var(--text-0);
+}
+.breakdown-row .sub {
+  font-size: 11px;
+  color: var(--text-3);
+  font-family: "JetBrains Mono", monospace;
+}
+
+/* ============ PRESET CARDS ============ */
+.presets {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 16px;
+  margin-bottom: 32px;
+}
+.preset {
+  background: rgba(255, 255, 255, 0.025);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 20px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.preset:hover {
+  border-color: var(--accent-cyan);
+  background: rgba(6, 182, 212, 0.04);
+  transform: translateY(-2px);
+}
+.preset.active {
+  border-color: var(--accent-cyan);
+  background: rgba(6, 182, 212, 0.08);
+}
+.preset .preset-name {
+  font-size: 16px;
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+.preset .preset-cost {
+  font-family: "JetBrains Mono", monospace;
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--accent-cyan);
+  margin-bottom: 8px;
+}
+.preset .preset-desc {
+  font-size: 12px;
+  color: var(--text-2);
+  line-height: 1.5;
+}
+.preset .preset-stack {
+  font-size: 11px;
+  color: var(--text-3);
+  font-family: "JetBrains Mono", monospace;
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px solid var(--border);
+}
+
+/* ============ COMPONENT TABLE ============ */
+.comp-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  overflow: hidden;
+}
+.comp-table th, .comp-table td {
+  padding: 12px 14px;
+  text-align: left;
+  font-size: 13px;
+}
+.comp-table thead {
+  background: rgba(0, 0, 0, 0.4);
+}
+.comp-table th {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  color: var(--text-2);
+  font-weight: 700;
+  border-bottom: 1px solid var(--border);
+}
+.comp-table tbody tr {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+  transition: background 0.1s;
+}
+.comp-table tbody tr:hover {
+  background: rgba(255, 255, 255, 0.02);
+}
+.comp-table tbody tr.recommended {
+  background: rgba(6, 182, 212, 0.05);
+}
+.comp-table td {
+  color: var(--text-1);
+}
+.comp-table td.mono {
+  font-family: "JetBrains Mono", monospace;
+  font-size: 12px;
+}
+.comp-table td.green { color: var(--accent-green); font-weight: 600; }
+.comp-table .badge {
+  display: inline-block;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+}
+.badge-cyan { background: rgba(6, 182, 212, 0.15); color: var(--accent-cyan); border: 1px solid rgba(6, 182, 212, 0.3); }
+.badge-purple { background: rgba(168, 85, 247, 0.15); color: var(--accent-purple); border: 1px solid rgba(168, 85, 247, 0.3); }
+.badge-green { background: rgba(16, 185, 129, 0.15); color: var(--accent-green); border: 1px solid rgba(16, 185, 129, 0.3); }
+.badge-orange { background: rgba(249, 115, 22, 0.15); color: var(--accent-orange); border: 1px solid rgba(249, 115, 22, 0.3); }
+.badge-red { background: rgba(239, 68, 68, 0.15); color: var(--accent-red); border: 1px solid rgba(239, 68, 68, 0.3); }
+.badge-yellow { background: rgba(234, 179, 8, 0.15); color: var(--accent-yellow); border: 1px solid rgba(234, 179, 8, 0.3); }
+
+/* ============ INSIGHT BOX ============ */
+.insight {
+  background: linear-gradient(135deg, rgba(6, 182, 212, 0.06), rgba(168, 85, 247, 0.06));
+  border: 1px solid rgba(6, 182, 212, 0.2);
+  border-radius: 14px;
+  padding: 24px;
+  margin: 24px 0;
+}
+.insight-title {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--accent-cyan);
+  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.insight-body {
+  font-size: 14px;
+  color: var(--text-1);
+  line-height: 1.7;
+}
+.insight-body strong { color: var(--text-0); font-weight: 700; }
+
+/* ============ FOOTER ============ */
+footer {
+  padding: 40px 24px;
+  border-top: 1px solid var(--border);
+  text-align: center;
+  font-size: 12px;
+  color: var(--text-3);
+  margin-top: 60px;
+}
+footer a { color: var(--accent-cyan); text-decoration: none; }
+footer a:hover { text-decoration: underline; }
+
+/* ============ UTILS ============ */
+.grid-2 { display: grid; grid-template-columns: 1fr; gap: 16px; }
+@media (min-width: 768px) { .grid-2 { grid-template-columns: 1fr 1fr; } }
+.mt-2 { margin-top: 24px; }
+.mb-2 { margin-bottom: 24px; }
+.text-mono { font-family: "JetBrains Mono", monospace; }
+.text-grad {
+  background: var(--grad-1);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* ============ TIER COMPARISON ============ */
+.tier-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 20px;
+}
+.tier-card {
+  background: rgba(255, 255, 255, 0.025);
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  padding: 24px;
+  position: relative;
+  overflow: hidden;
+}
+.tier-card.tier-1 {
+  border-color: rgba(6, 182, 212, 0.3);
+  background: linear-gradient(135deg, rgba(6, 182, 212, 0.04), transparent);
+}
+.tier-card.tier-2 {
+  border-color: rgba(168, 85, 247, 0.3);
+  background: linear-gradient(135deg, rgba(168, 85, 247, 0.04), transparent);
+}
+.tier-card.tier-3 {
+  border-color: rgba(16, 185, 129, 0.3);
+  background: linear-gradient(135deg, rgba(16, 185, 129, 0.04), transparent);
+}
+.tier-card .tier-tag {
+  display: inline-block;
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  padding: 3px 8px;
+  border-radius: 6px;
+  margin-bottom: 12px;
+}
+.tier-1 .tier-tag { background: rgba(6, 182, 212, 0.15); color: var(--accent-cyan); }
+.tier-2 .tier-tag { background: rgba(168, 85, 247, 0.15); color: var(--accent-purple); }
+.tier-3 .tier-tag { background: rgba(16, 185, 129, 0.15); color: var(--accent-green); }
+.tier-card h3 { font-size: 20px; margin-bottom: 6px; }
+.tier-card .tier-cost {
+  font-family: "JetBrains Mono", monospace;
+  font-size: 26px;
+  font-weight: 700;
+  margin-bottom: 12px;
+}
+.tier-1 .tier-cost { color: var(--accent-cyan); }
+.tier-2 .tier-cost { color: var(--accent-purple); }
+.tier-3 .tier-cost { color: var(--accent-green); }
+.tier-card ul { list-style: none; }
+.tier-card li {
+  font-size: 13px;
+  color: var(--text-1);
+  padding: 4px 0;
+  display: flex;
+  gap: 8px;
+}
+.tier-card li::before {
+  content: "→";
+  color: var(--accent-cyan);
+  flex-shrink: 0;
+}
+
+/* responsive tweaks */
+@media (max-width: 640px) {
+  .comp-row { grid-template-columns: 1fr; gap: 6px; }
+  .result-stats { grid-template-columns: 1fr; }
+  .result-main .value { font-size: 36px; }
+}
+</style>
+</head>
+<body>
+
+<!-- ============ HERO ============ -->
+<section class="hero">
+  <div class="hero-badge"><span class="pulse"></span>INVESTIGACIÓN COMPLETADA · JULIO 2026</div>
+  <h1>Stack Óptimo de Voz AI<br>para <span class="ada-mark">ADA</span></h1>
+  <p class="sub">Análisis exhaustivo de componentes, latencia, costos y trade-offs para llamadas B2B de SimpliRoute en español, portugués e inglés.</p>
+  <p class="meta">Benchmarks: Artificial Analysis Q2 2026 · Deepgram · Cartesia · Anthropic · LiveKit · Vapi · Retell</p>
+</section>
+
+<!-- ============ TL;DR + PIPELINE ============ -->
+<section>
+  <div class="container">
+    <div class="section-header">
+      <span class="num">01 · TL;DR</span>
+      <h2>El stack ganador</h2>
+      <p>Cada componente es top-3 en su categoría. Combinación battle-tested por líderes de la industria (Vapi, Retell, PolyAI).</p>
+    </div>
+
+    <div class="pipeline">
+      <div class="pipeline-row">
+        <div class="component cat-tel recommended">
+          <div class="cat">Telephony</div>
+          <div class="name">Telnyx / Twilio</div>
+          <div class="price">$0.008–0.013/min</div>
+          <div class="meta-line">SIP · LATAM coverage</div>
+        </div>
+        <div class="component cat-orch recommended">
+          <div class="cat">Orquestador</div>
+          <div class="name">LiveKit Agents</div>
+          <div class="price">$0.005/min</div>
+          <div class="meta-line">11.2k⭐ · WebRTC nativo</div>
+        </div>
+      </div>
+      <div class="pipeline-arrow">↓</div>
+      <div class="pipeline-row">
+        <div class="component cat-vad">
+          <div class="cat">VAD</div>
+          <div class="name">Silero VAD</div>
+          <div class="price">FREE</div>
+          <div class="meta-line">&lt;1ms CPU · 6000+ idiomas</div>
+        </div>
+        <div class="component cat-vad">
+          <div class="cat">Turn Detection</div>
+          <div class="name">LiveKit TurnDetector v1-mini</div>
+          <div class="price">FREE</div>
+          <div class="meta-line">14 idiomas · 99.3% TPR es</div>
+        </div>
+      </div>
+      <div class="pipeline-arrow">↓</div>
+      <div class="pipeline-row">
+        <div class="component cat-stt recommended">
+          <div class="cat">STT</div>
+          <div class="name">Deepgram Nova-3</div>
+          <div class="price">$0.0077/min</div>
+          <div class="meta-line">6.84% WER · codeswitching ES/PT/EN</div>
+        </div>
+        <div class="component cat-llm recommended">
+          <div class="cat">LLM</div>
+          <div class="name">Claude Haiku 4.5</div>
+          <div class="price">~$0.02/min</div>
+          <div class="meta-line">2× speed · ⅓ cost · top function calling</div>
+        </div>
+        <div class="component cat-tts recommended">
+          <div class="cat">TTS</div>
+          <div class="name">Cartesia Sonic 3.5</div>
+          <div class="price">~$0.03/min</div>
+          <div class="meta-line">~90ms TTFB · MOS 4.7 · voces nativas es/pt</div>
+        </div>
+      </div>
+      <div class="pipeline-arrow">↓</div>
+      <div class="pipeline-row" style="max-width: 280px; margin: 0 auto;">
+        <div class="component cat-tts">
+          <div class="cat">Audio Output</div>
+          <div class="name">📞 Cliente</div>
+          <div class="price">—</div>
+          <div class="meta-line">Latencia voice-to-voice P50: ~700–800ms</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ PRESETS ============ -->
+<section>
+  <div class="container">
+    <div class="section-header">
+      <span class="num">02 · PRESETS</span>
+      <h2>4 stacks pre-armados</h2>
+      <p>Click en cualquiera para cargar la configuración en la calculadora.</p>
+    </div>
+
+    <div class="presets">
+      <div class="preset active" data-preset="tier1">
+        <div class="preset-name">Tier 1 · Managed</div>
+        <div class="preset-cost">~$0.10/min</div>
+        <div class="preset-desc">100% hosted. Llegas a producción en 2-3 semanas. Cero DevOps.</div>
+        <div class="preset-stack">Telnyx + LiveKit Cloud + Deepgram Nova-3 + Claude Haiku 4.5 + Cartesia Sonic 3.5</div>
+      </div>
+      <div class="preset" data-preset="tier2">
+        <div class="preset-name">Tier 2 · Mixto</div>
+        <div class="preset-cost">~$0.06/min</div>
+        <div class="preset-desc">STT self-hosted. Savings 60%. Data residency LATAM. Balance costo/control.</div>
+        <div class="preset-stack">Telnyx + LiveKit Cloud + Parakeet TDT self-host + Claude Haiku 4.5 + Cartesia Sonic 3.5</div>
+      </div>
+      <div class="preset" data-preset="tier3">
+        <div class="preset-name">Tier 3 · Self-Host</div>
+        <div class="preset-cost">~$0.03/min</div>
+        <div class="preset-desc">Full self-host. Máximo control, costo mínimo, requiere equipo ML.</div>
+        <div class="preset-stack">Telnyx + Pipecat self-host + Parakeet TDT + Qwen3-4B self-host + Kokoro 82M self-host</div>
+      </div>
+      <div class="preset" data-preset="realtime">
+        <div class="preset-name">E2E · OpenAI Realtime</div>
+        <div class="preset-cost">~$0.35/min</div>
+        <div class="preset-desc">Todo-en-uno speech-to-speech. Más caro pero más simple. Costo alto a escala.</div>
+        <div class="preset-stack">Twilio + OpenAI gpt-realtime-2 + WebSocket + Turn detection nativo</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ CALCULATOR ============ -->
+<section>
+  <div class="container">
+    <div class="section-header">
+      <span class="num">03 · CALCULADORA</span>
+      <h2>Simula tu stack</h2>
+      <p>Cambiá los componentes, ajustá los minutos, y mirá cómo varía el costo y la latencia estimada en tiempo real.</p>
+    </div>
+
+    <div class="calc-wrap">
+      <!-- LEFT: Configuration -->
+      <div class="calc-card">
+        <div class="calc-tabs" role="tablist">
+          <button class="calc-tab active" data-mode="pipeline">Pipeline Modular<small>STT + LLM + TTS separados</small></button>
+          <button class="calc-tab" data-mode="realtime">Todo-en-Uno<small>End-to-end speech-to-speech</small></button>
+          <button class="calc-tab" data-mode="mixed">Mixto<small>Combinación custom</small></button>
+        </div>
+
+        <div class="calc-tab-desc" id="modeDesc">
+          <strong>Pipeline modular:</strong> máximo control y mejor costo. Cada componente se elige y se intercambia. Ideal para producción B2B con tool use.
+        </div>
+
+        <!-- Minutes Slider -->
+        <div class="slider-group">
+          <div class="slider-row">
+            <span class="slider-label">Minutos por mes</span>
+            <span class="slider-value" id="minutesLabel">10,000</span>
+          </div>
+          <input type="range" id="minutes" class="slider-input" min="500" max="500000" step="500" value="10000">
+          <div class="slider-ticks">
+            <span>500</span>
+            <span>10K</span>
+            <span>50K</span>
+            <span>100K</span>
+            <span>500K</span>
+          </div>
+        </div>
+
+        <!-- Component Selectors (Pipeline Mode) -->
+        <div id="pipelineSelectors">
+          <div class="comp-row">
+            <div class="comp-name">Telephony<small>telco</small></div>
+            <select class="comp-select" data-component="telephony"></select>
+          </div>
+          <div class="comp-row">
+            <div class="comp-name">VAD<small>voice activity</small></div>
+            <select class="comp-select" data-component="vad"></select>
+          </div>
+          <div class="comp-row">
+            <div class="comp-name">Turn Detector<small>turn-taking</small></div>
+            <select class="comp-select" data-component="turn"></select>
+          </div>
+          <div class="comp-row">
+            <div class="comp-name">STT<small>speech-to-text</small></div>
+            <select class="comp-select" data-component="stt"></select>
+          </div>
+          <div class="comp-row">
+            <div class="comp-name">LLM<small>razonamiento</small></div>
+            <select class="comp-select" data-component="llm"></select>
+          </div>
+          <div class="comp-row">
+            <div class="comp-name">TTS<small>text-to-speech</small></div>
+            <select class="comp-select" data-component="tts"></select>
+          </div>
+          <div class="comp-row">
+            <div class="comp-name">Orquestador<small>framework</small></div>
+            <select class="comp-select" data-component="orch"></select>
+          </div>
+        </div>
+
+        <!-- Realtime Mode -->
+        <div id="realtimeSelectors" style="display: none;">
+          <div class="comp-row">
+            <div class="comp-name">Modelo E2E<small>speech-to-speech</small></div>
+            <select class="comp-select" data-component="e2e"></select>
+          </div>
+          <div class="comp-row">
+            <div class="comp-name">Telephony<small>telco</small></div>
+            <select class="comp-select" data-component="telephonyR"></select>
+          </div>
+        </div>
+
+        <!-- Mixed Mode -->
+        <div id="mixedSelectors" style="display: none;">
+          <div class="insight" style="margin: 0 0 16px;">
+            <div class="insight-title">💡 MODO MIXTO</div>
+            <div class="insight-body">Elegí los componentes que querés customizar. El resto se mantiene del Tier 1 recomendado. Útil para casos como "STT self-hosted pero TTS hosted".</div>
+          </div>
+          <div class="comp-row">
+            <div class="comp-name">Telephony<small>telco</small></div>
+            <select class="comp-select" data-component="telephonyM"></select>
+          </div>
+          <div class="comp-row">
+            <div class="comp-name">STT<small>speech-to-text</small></div>
+            <select class="comp-select" data-component="sttM"></select>
+          </div>
+          <div class="comp-row">
+            <div class="comp-name">LLM<small>razonamiento</small></div>
+            <select class="comp-select" data-component="llmM"></select>
+          </div>
+          <div class="comp-row">
+            <div class="comp-name">TTS<small>text-to-speech</small></div>
+            <select class="comp-select" data-component="ttsM"></select>
+          </div>
+          <div class="comp-row">
+            <div class="comp-name">Orquestador<small>framework</small></div>
+            <select class="comp-select" data-component="orchM"></select>
+          </div>
+        </div>
+      </div>
+
+      <!-- RIGHT: Results -->
+      <div class="results">
+        <div class="result-main">
+          <div class="label">Costo mensual estimado</div>
+          <div class="value" id="totalCost">$1,000</div>
+          <div class="suffix" id="perMinCost">$0.10 USD por minuto</div>
+        </div>
+
+        <div class="result-stats">
+          <div class="stat">
+            <div class="stat-label">Latencia P50 est.</div>
+            <div class="stat-value" id="latencyP50">~800ms</div>
+          </div>
+          <div class="stat">
+            <div class="stat-label">Latencia P95 est.</div>
+            <div class="stat-value" id="latencyP95">~1.4s</div>
+          </div>
+          <div class="stat">
+            <div class="stat-label">WER STT est.</div>
+            <div class="stat-value good" id="werEstimate">~6.8%</div>
+          </div>
+          <div class="stat">
+            <div class="stat-label">MOS TTS est.</div>
+            <div class="stat-value good" id="mosEstimate">4.7</div>
+          </div>
+        </div>
+
+        <div class="breakdown">
+          <h3>Desglose de costos</h3>
+          <div id="breakdownList"></div>
+          <div class="breakdown-row" style="border-top: 2px solid var(--border-strong); margin-top: 8px; padding-top: 12px;">
+            <div class="name"><strong>TOTAL MENSUAL</strong></div>
+            <div class="price" style="color: var(--accent-cyan); font-size: 15px;" id="breakdownTotal">$1,000</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ INSIGHT ============ -->
+<section>
+  <div class="container">
+    <div class="insight">
+      <div class="insight-title">💡 KEY INSIGHTS</div>
+      <div class="insight-body">
+        <strong>1.</strong> A 10K min/mes, el <strong>pipeline modular cuesta 3-4× menos</strong> que OpenAI Realtime. A 100K min/mes la diferencia es <strong>~10×</strong>.<br><br>
+        <strong>2.</strong> Los <strong>3 componentes que más mueven la aguja</strong> son STT (Deepgram vs Parakeet = 4× costo), LLM (Haiku vs Sonnet = 3×) y TTS (Cartesia vs ElevenLabs = 2.5×).<br><br>
+        <strong>3.</strong> El LLM es típicamente <strong>el componente más caro del pipeline</strong> (~50% del costo total en Tier 1). Por eso Haiku 4.5 vs Sonnet 4 es la decisión más importante.<br><br>
+        <strong>4.</strong> <strong>End-to-end NO siempre es más rápido.</strong> OpenAI Realtime tiene ~400ms E2E. Un pipeline optimizado con Haiku + Cartesia + Deepgram llega a ~700ms pero cuesta 3× menos. Si necesitás sub-400ms absoluto, evaluá Realtime.<br><br>
+        <strong>5.</strong> El <strong>VAD y turn detection son free</strong> (Silero + LiveKit TurnDetector). No pongas dinero acá.
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ TIER COMPARISON ============ -->
+<section>
+  <div class="container">
+    <div class="section-header">
+      <span class="num">04 · TIERS</span>
+      <h2>3 niveles según escala</h2>
+      <p>Empezá en Tier 1, migrá a Tier 2 cuando superes 50K min/mes.</p>
+    </div>
+
+    <div class="tier-grid">
+      <div class="tier-card tier-1">
+        <span class="tier-tag">Tier 1 · MVP</span>
+        <h3>Start (0–50K min/mes)</h3>
+        <div class="tier-cost">$0.10/min</div>
+        <ul>
+          <li>100% managed, zero DevOps</li>
+          <li>Llegas a producción en 2-3 semanas</li>
+          <li>Telnyx + LiveKit Cloud + Deepgram Nova-3 + Claude Haiku 4.5 + Cartesia Sonic 3.5</li>
+          <li>Costo mensual: $1,000/mes @ 10K min</li>
+          <li>Latencia P50: 700-800ms</li>
+        </ul>
+      </div>
+
+      <div class="tier-card tier-2">
+        <span class="tier-tag">Tier 2 · Escala</span>
+        <h3>Growth (50K–200K min/mes)</h3>
+        <div class="tier-cost">$0.06/min</div>
+        <ul>
+          <li>STT self-hosted (Parakeet TDT V3)</li>
+          <li>Savings 40% vs Tier 1</li>
+          <li>Data residency LATAM (importante compliance)</li>
+          <li>Costo mensual: $3,000/mes @ 50K min</li>
+          <li>WER en español MEJOR que Tier 1 (3.4% vs 6.84%)</li>
+        </ul>
+      </div>
+
+      <div class="tier-card tier-3">
+        <span class="tier-tag">Tier 3 · Advanced</span>
+        <h3>Scale (200K+ min/mes)</h3>
+        <div class="tier-cost">$0.03/min</div>
+        <ul>
+          <li>Stack completo self-hosted</li>
+          <li>Qwen3-4B / Llama 3.3 70B + Kokoro TTS + Parakeet STT</li>
+          <li>Costo mensual: $3,000-6,000/mes @ 200K min</li>
+          <li>Requiere equipo ML para mantener</li>
+          <li>Cero vendor lock-in</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ COMPONENT DETAILS ============ -->
+<section>
+  <div class="container">
+    <div class="section-header">
+      <span class="num">05 · DETALLE</span>
+      <h2>Comparativa por componente</h2>
+      <p>Los mejores modelos del Q2 2026 según Artificial Analysis y benchmarks independientes.</p>
+    </div>
+
+    <h3 style="font-size: 18px; margin-bottom: 12px; color: var(--accent-blue);">🎤 STT (Speech-to-Text)</h3>
+    <table class="comp-table">
+      <thead>
+        <tr><th>Modelo</th><th>Proveedor</th><th>WER</th><th>Speed</th><th>Precio/1K min</th><th>Notas</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><strong>Scribe v2</strong></td><td>ElevenLabs</td><td class="mono green">2.2%</td><td class="mono">33×</td><td class="mono">$3.67</td><td><span class="badge badge-green">Mejor WER</span></td></tr>
+        <tr><td><strong>MAI-Transcribe-1.5</strong></td><td>Azure</td><td class="mono green">2.4%</td><td class="mono">254×</td><td class="mono">$6.00</td><td><span class="badge badge-cyan">Fast</span></td></tr>
+        <tr><td><strong>Smallest Pulse Pro</strong></td><td>Smallest</td><td class="mono green">2.4%</td><td class="mono">297×</td><td class="mono">$3.50</td><td>Mejor $/accuracy</td></tr>
+        <tr><td><strong>Universal-3 Pro</strong></td><td>AssemblyAI</td><td class="mono">3.1%</td><td class="mono">89×</td><td class="mono">$3.50</td><td>Streaming</td></tr>
+        <tr><td><strong>Voxtral Small</strong></td><td>Mistral</td><td class="mono">2.8%</td><td class="mono">55×</td><td class="mono">$4.00</td><td>Open weights</td></tr>
+        <tr class="recommended"><td><strong>Nova-3</strong></td><td>Deepgram</td><td class="mono">5.2%</td><td class="mono green">477×</td><td class="mono">$4.30</td><td><span class="badge badge-cyan">★ RECOMENDADO</span></td></tr>
+        <tr><td><strong>Parakeet TDT V3</strong></td><td>NVIDIA (self)</td><td class="mono">4.5%</td><td class="mono green">933×</td><td class="mono green">$0 (self)</td><td><span class="badge badge-purple">Mejor open</span></td></tr>
+      </tbody>
+    </table>
+
+    <h3 style="font-size: 18px; margin: 32px 0 12px; color: var(--accent-purple);">🧠 LLM (Large Language Model)</h3>
+    <table class="comp-table">
+      <thead>
+        <tr><th>Modelo</th><th>Proveedor</th><th>TTFT est.</th><th>Speed</th><th>Precio (est./min)</th><th>Notas</th></tr>
+      </thead>
+      <tbody>
+        <tr class="recommended"><td><strong>Claude Haiku 4.5</strong></td><td>Anthropic</td><td class="mono">~300ms</td><td class="mono green">rápido</td><td class="mono">$0.02</td><td><span class="badge badge-cyan">★ RECOMENDADO</span></td></tr>
+        <tr><td><strong>Claude Sonnet 4.5</strong></td><td>Anthropic</td><td class="mono">~400ms</td><td class="mono">medio</td><td class="mono">$0.06</td><td>Top calidad</td></tr>
+        <tr><td><strong>Gemini 2.5 Flash</strong></td><td>Google</td><td class="mono green">~200ms</td><td class="mono">rápido</td><td class="mono green">$0.005</td><td><span class="badge badge-green">Más barato</span></td></tr>
+        <tr><td><strong>Gemini 2.5 Flash Lite</strong></td><td>Google</td><td class="mono green">&lt;200ms</td><td class="mono green">muy rápido</td><td class="mono green">~$0.003</td><td><span class="badge badge-green">Menor latencia</span></td></tr>
+        <tr><td><strong>GPT-4o</strong></td><td>OpenAI</td><td class="mono">~400ms</td><td class="mono">medio</td><td class="mono">$0.03</td><td>Buen all-rounder</td></tr>
+        <tr><td><strong>GPT-4.1-mini</strong></td><td>OpenAI</td><td class="mono">~250ms</td><td class="mono">rápido</td><td class="mono">$0.008</td><td>Barato</td></tr>
+        <tr><td><strong>Qwen3-4B</strong></td><td>Alibaba (self)</td><td class="mono">~250ms</td><td class="mono">rápido</td><td class="mono green">$0.003</td><td>Self-host barato</td></tr>
+        <tr><td><strong>Llama 3.3 70B</strong></td><td>Meta (self)</td><td class="mono">~350ms</td><td class="mono">medio</td><td class="mono">$0.005</td><td>Open weights</td></tr>
+        <tr><td><strong>Mercury 2</strong></td><td>Inception Labs</td><td class="mono green">~80ms</td><td class="mono green">disruptivo</td><td class="mono">$0.01</td><td><span class="badge badge-purple">Experimental</span></td></tr>
+      </tbody>
+    </table>
+
+    <h3 style="font-size: 18px; margin: 32px 0 12px; color: var(--accent-pink);">🔊 TTS (Text-to-Speech)</h3>
+    <table class="comp-table">
+      <thead>
+        <tr><th>Modelo</th><th>Proveedor</th><th>TTFB</th><th>MOS</th><th>Precio/1M chars</th><th>Notas</th></tr>
+      </thead>
+      <tbody>
+        <tr class="recommended"><td><strong>Sonic 3.5</strong></td><td>Cartesia</td><td class="mono green">~90ms</td><td class="mono">4.7</td><td class="mono">$65-80</td><td><span class="badge badge-cyan">★ RECOMENDADO</span></td></tr>
+        <tr><td><strong>Flash v2.5</strong></td><td>ElevenLabs</td><td class="mono green">~75ms</td><td class="mono green">4.8</td><td class="mono">$180</td><td><span class="badge badge-green">Mejor MOS</span></td></tr>
+        <tr><td><strong>Turbo v2.5</strong></td><td>ElevenLabs</td><td class="mono">~275ms</td><td class="mono green">4.8</td><td class="mono">$180</td><td>Premium</td></tr>
+        <tr><td><strong>Eleven v3</strong></td><td>ElevenLabs</td><td class="mono">variable</td><td class="mono">top w/ emotion</td><td class="mono">TBD</td><td>Nuevo</td></tr>
+        <tr><td><strong>GPT-Realtime-2</strong></td><td>OpenAI</td><td class="mono">—</td><td class="mono">—</td><td class="mono">end-to-end</td><td>Full speech-to-speech</td></tr>
+        <tr><td><strong>Gemini 2.5 Flash TTS</strong></td><td>Google</td><td class="mono">—</td><td class="mono">alto</td><td class="mono green">bajo</td><td>Multilingual</td></tr>
+        <tr><td><strong>Kokoro 82M v1.0</strong></td><td>open-source</td><td class="mono">~200ms</td><td class="mono">good</td><td class="mono green">$0 (self)</td><td>Self-host gratis</td></tr>
+        <tr><td><strong>OpenAI tts-1</strong></td><td>OpenAI</td><td class="mono">~220ms</td><td class="mono">good</td><td class="mono green">$15</td><td>Barato backup</td></tr>
+        <tr><td><strong>XTTS v2</strong></td><td>Coqui (OSS)</td><td class="mono">~300ms</td><td class="mono">good</td><td class="mono">self-host</td><td>Clonación voz</td></tr>
+      </tbody>
+    </table>
+
+    <h3 style="font-size: 18px; margin: 32px 0 12px; color: var(--accent-green);">🌐 End-to-End (Speech-to-Speech)</h3>
+    <table class="comp-table">
+      <thead>
+        <tr><th>Modelo</th><th>Proveedor</th><th>Latencia E2E</th><th>es/pt</th><th>Tool use</th><th>Precio/min</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><strong>gpt-realtime-2</strong></td><td>OpenAI</td><td class="mono">300-500ms</td><td class="mono">✅ 50+</td><td class="mono">✅</td><td class="mono">~$0.35</td></tr>
+        <tr><td><strong>Gemini 2.5 Flash Live</strong></td><td>Google</td><td class="mono">400-600ms</td><td class="mono green">✅✅ 70+</td><td class="mono">✅</td><td class="mono green">~$0.075</td></tr>
+        <tr><td><strong>Nova Sonic</strong></td><td>Amazon Bedrock</td><td class="mono">~400ms</td><td class="mono">✅</td><td class="mono">✅</td><td class="mono">~$0.08</td></tr>
+        <tr><td><strong>Moshi</strong></td><td>Kyutai (open)</td><td class="mono green">~200ms</td><td class="mono"><span class="badge badge-red">❌ débil</span></td><td class="mono">❌</td><td class="mono">$0.05-0.10</td></tr>
+        <tr><td><strong>CSM-1B</strong></td><td>Sesame (open)</td><td class="mono green">~250ms</td><td class="mono"><span class="badge badge-red">❌ EN only</span></td><td class="mono">❌</td><td class="mono">research</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- ============ FOOTER ============ -->
+<footer>
+  <div class="container">
+    <p><strong style="color: var(--text-1);">ADA Voice Stack Calculator</strong> · Investigación julio 2026</p>
+    <p style="margin-top: 8px;">Fuentes: <a href="https://artificialanalysis.ai" target="_blank">Artificial Analysis</a> · <a href="https://deepgram.com" target="_blank">Deepgram</a> · <a href="https://cartesia.ai" target="_blank">Cartesia</a> · <a href="https://anthropic.com" target="_blank">Anthropic</a> · <a href="https://livekit.io" target="_blank">LiveKit</a> · <a href="https://github.com/kyutai-labs/moshi" target="_blank">Kyutai Moshi</a></p>
+    <p style="margin-top: 16px;">Stack recomendado para SimpliRoute · Por Ken</p>
+  </div>
+</footer>
+
+<script>
+// ============ DATA ============
+const components = {
+  telephony: [
+    { id: "twilio", name: "Twilio (hosted)", costPerMin: 0.013, latency: 50, note: "El más usado, integración rápida" },
+    { id: "telnyx", name: "Telnyx (hosted)", costPerMin: 0.008, latency: 40, note: "Mejor pricing LATAM" },
+  ],
+  vad: [
+    { id: "silero", name: "Silero VAD (open-source, free)", costPerMin: 0, latency: 1, note: "9.5k⭐ GH · <1ms CPU" },
+    { id: "picovoice", name: "Picovoice Cobra (comercial)", costPerMin: 0.005, latency: 1, note: "98.9% TPR · comercial" },
+  ],
+  turn: [
+    { id: "livekit-turn", name: "LiveKit TurnDetector v1-mini (free)", costPerMin: 0, latency: 30, note: "14 idiomas · 99.3% TPR es" },
+    { id: "pipecat-turn", name: "Pipecat Smart Turn v3 (free)", costPerMin: 0, latency: 12, note: "23 idiomas · 12ms CPU" },
+  ],
+  stt: [
+    { id: "deepgram-nova3", name: "Deepgram Nova-3 ⭐ recomendado", costPerMin: 0.0077, latency: 250, wer: 6.84, note: "Codeswitching ES/PT/EN · keyterm prompting" },
+    { id: "elevenlabs-scribe", name: "ElevenLabs Scribe v2", costPerMin: 0.00367, latency: 300, wer: 2.2, note: "Mejor WER absoluto" },
+    { id: "assemblyai-u3", name: "AssemblyAI Universal-3 Pro", costPerMin: 0.0035, latency: 300, wer: 3.1, note: "Streaming sólido" },
+    { id: "azure-mai", name: "Azure MAI-Transcribe-1.5", costPerMin: 0.006, latency: 250, wer: 2.4, note: "Speed excelente" },
+    { id: "smallest-pulse", name: "Smallest AI Pulse Pro", costPerMin: 0.0035, latency: 250, wer: 2.4, note: "Mejor relación $/accuracy" },
+    { id: "parakeet-self", name: "Parakeet TDT 0.6B V3 (self-host)", costPerMin: 0.002, latency: 200, wer: 4.5, note: "OSS · CC-BY-4.0 · 933× speed" },
+    { id: "whisper-groq", name: "Whisper Large v3 (Groq hosted)", costPerMin: 0.00067, latency: 300, wer: 4.6, note: "El más barato" },
+    { id: "mistral-voxtral", name: "Voxtral Small (Mistral)", costPerMin: 0.004, latency: 280, wer: 2.8, note: "Open weights Mistral" },
+  ],
+  llm: [
+    { id: "haiku-45", name: "Claude Haiku 4.5 ⭐ recomendado", costPerMin: 0.02, latency: 300, note: "⅓ costo Sonnet · 2× velocidad · top function calling" },
+    { id: "sonnet-45", name: "Claude Sonnet 4.5", costPerMin: 0.06, latency: 400, note: "Top calidad razonamiento" },
+    { id: "gemini-flash", name: "Gemini 2.5 Flash", costPerMin: 0.005, latency: 200, note: "Bajo TTFT, 70+ idiomas" },
+    { id: "gemini-flashlite", name: "Gemini 2.5 Flash-Lite", costPerMin: 0.003, latency: 180, note: "Menor latencia del mercado" },
+    { id: "gpt-4o", name: "GPT-4o", costPerMin: 0.03, latency: 400, note: "Buen all-rounder, function calling sólido" },
+    { id: "gpt-41-mini", name: "GPT-4.1-mini", costPerMin: 0.008, latency: 250, note: "Nuevo, balanceado" },
+    { id: "qwen3-4b-self", name: "Qwen3-4B (self-host)", costPerMin: 0.003, latency: 250, note: "Open weights · modal benchmark 1s E2E" },
+    { id: "llama-33-self", name: "Llama 3.3 70B (self-host)", costPerMin: 0.005, latency: 350, note: "Open weights, calidad top" },
+    { id: "mercury-2", name: "Mercury 2 (Inception Labs)", costPerMin: 0.01, latency: 80, note: "Diffusion-based · sub-100ms TTFT · experimental" },
+  ],
+  tts: [
+    { id: "cartesia-sonic", name: "Cartesia Sonic 3.5 ⭐ recomendado", costPerMin: 0.03, latency: 90, mos: 4.7, note: "~90ms TTFB · voces nativas es/pt" },
+    { id: "elevenlabs-flash", name: "ElevenLabs Flash v2.5", costPerMin: 0.04, latency: 75, mos: 4.8, note: "Más rápido · alto MOS" },
+    { id: "elevenlabs-turbo", name: "ElevenLabs Turbo v2.5", costPerMin: 0.08, latency: 275, mos: 4.8, note: "Premium · MOS top" },
+    { id: "elevenlabs-v3", name: "ElevenLabs v3", costPerMin: 0.08, latency: 200, mos: 4.9, note: "Nuevo · emotion tags" },
+    { id: "openai-tts1", name: "OpenAI tts-1", costPerMin: 0.015, latency: 220, mos: 4.3, note: "Barato backup" },
+    { id: "kokoro-self", name: "Kokoro 82M (self-host, gratis)", costPerMin: 0.001, latency: 200, mos: 4.2, note: "Open source · 82M params" },
+    { id: "xtts-self", name: "XTTS v2 (Coqui, self-host)", costPerMin: 0.001, latency: 300, mos: 4.4, note: "Clonación cross-lingual" },
+  ],
+  orch: [
+    { id: "livekit-cloud", name: "LiveKit Cloud (managed)", costPerMin: 0.005, latency: 50, note: "TurnDetector integrado · 11.2k⭐" },
+    { id: "pipecat-self", name: "Pipecat (self-host)", costPerMin: 0.001, latency: 50, note: "Más control · más config · 10.6k⭐" },
+    { id: "vocode", name: "Vocode", costPerMin: 0.003, latency: 80, note: "Prototipado · académico" },
+  ],
+  e2e: [
+    { id: "openai-realtime", name: "OpenAI gpt-realtime-2", costPerMin: 0.35, latency: 400, note: "50+ idiomas · tool use nativo" },
+    { id: "gemini-live", name: "Google Gemini 2.5 Flash Live", costPerMin: 0.075, latency: 500, note: "5-8× más barato · 70+ idiomas" },
+    { id: "nova-sonic", name: "Amazon Nova Sonic", costPerMin: 0.08, latency: 400, note: "Si ya estás en AWS" },
+    { id: "moshi-self", name: "Kyutai Moshi (self-host)", costPerMin: 0.10, latency: 200, note: "Full duplex · es/pt débil · research" },
+  ],
+};
+
+// Mode configurations (mixed usa keys con sufijo M)
+const tierDefaults = {
+  tier1: { telephony: "telnyx", vad: "silero", turn: "livekit-turn", stt: "deepgram-nova3", llm: "haiku-45", tts: "cartesia-sonic", orch: "livekit-cloud" },
+  tier2: { telephony: "telnyx", vad: "silero", turn: "livekit-turn", stt: "parakeet-self", llm: "haiku-45", tts: "cartesia-sonic", orch: "livekit-cloud" },
+  tier3: { telephony: "telnyx", vad: "silero", turn: "pipecat-turn", stt: "parakeet-self", llm: "qwen3-4b-self", tts: "kokoro-self", orch: "pipecat-self" },
+  realtime: { telephony: "twilio", e2e: "openai-realtime" },
+};
+const tierDefaultsMixed = {
+  tier1: { telephonyM: "telnyx", sttM: "deepgram-nova3", llmM: "haiku-45", ttsM: "cartesia-sonic", orchM: "livekit-cloud" },
+  tier2: { telephonyM: "telnyx", sttM: "parakeet-self", llmM: "haiku-45", ttsM: "cartesia-sonic", orchM: "livekit-cloud" },
+  tier3: { telephonyM: "telnyx", sttM: "parakeet-self", llmM: "qwen3-4b-self", ttsM: "kokoro-self", orchM: "pipecat-self" },
+};
+
+// ============ STATE ============
+let state = {
+  minutes: 10000,
+  mode: "pipeline",
+  pipeline: { ...tierDefaults.tier1 },
+  mixed: { ...tierDefaultsMixed.tier1 },
+  realtime: { telephonyR: "twilio", e2e: "openai-realtime" },
+};
+
+// ============ RENDER SELECTS ============
+function renderSelect(componentKey, selectEl, selectedId) {
+  selectEl.innerHTML = "";
+  const items = components[componentKey] || [];
+  items.forEach(item => {
+    const opt = document.createElement("option");
+    opt.value = item.id;
+    opt.textContent = `${item.name} · $${item.costPerMin.toFixed(4)}/min · ${item.latency}ms`;
+    if (item.id === selectedId) opt.selected = true;
+    selectEl.appendChild(opt);
+  });
+}
+
+function findComponent(key, id) {
+  return (components[key] || []).find(c => c.id === id);
+}
+
+// ============ CALCULATION ============
+function calculate() {
+  const minutes = state.minutes;
+  let total = 0;
+  let latencies = [];
+  let wer = null;
+  let mos = null;
+  let breakdown = [];
+
+  if (state.mode === "pipeline") {
+    const cfg = state.pipeline;
+    ["telephony", "vad", "turn", "stt", "llm", "tts", "orch"].forEach(key => {
+      const selId = cfg[key];
+      const comp = findComponent(key, selId);
+      if (!comp) return;
+      const cost = comp.costPerMin * minutes;
+      total += cost;
+      latencies.push(comp.latency);
+      if (comp.wer !== undefined) wer = comp.wer;
+      if (comp.mos !== undefined) mos = comp.mos;
+      breakdown.push({
+        name: comp.name,
+        cost: cost,
+        sub: `$${comp.costPerMin.toFixed(4)}/min · ${comp.latency}ms`,
+      });
+    });
+  } else if (state.mode === "realtime") {
+    const cfg = state.realtime;
+    // Telephony
+    const tel = findComponent("telephony", cfg.telephonyR);
+    if (tel) {
+      const cost = tel.costPerMin * minutes;
+      total += cost;
+      latencies.push(tel.latency);
+      breakdown.push({ name: tel.name + " (telephony)", cost, sub: `$${tel.costPerMin.toFixed(4)}/min · ${tel.latency}ms` });
+    }
+    // E2E
+    const e2e = findComponent("e2e", cfg.e2e);
+    if (e2e) {
+      const cost = e2e.costPerMin * minutes;
+      total += cost;
+      latencies.push(e2e.latency);
+      breakdown.push({ name: e2e.name, cost, sub: `$${e2e.costPerMin.toFixed(4)}/min · ${e2e.latency}ms` });
+    }
+    // Default orchestration (LiveKit)
+    const orch = findComponent("orch", "livekit-cloud");
+    if (orch) {
+      const cost = orch.costPerMin * minutes;
+      total += cost;
+      breakdown.push({ name: orch.name + " (orquestador)", cost, sub: `$${orch.costPerMin.toFixed(4)}/min` });
+    }
+    wer = 7.0; // E2E típico
+    mos = 4.5;
+  } else if (state.mode === "mixed") {
+    const cfg = state.mixed;
+    ["telephonyM", "sttM", "llmM", "ttsM", "orchM"].forEach(key => {
+      const map = { telephonyM: "telephony", sttM: "stt", llmM: "llm", ttsM: "tts", orchM: "orch" };
+      const cfgKey = map[key];
+      const selId = cfg[key];
+      const comp = findComponent(cfgKey, selId);
+      if (!comp) return;
+      const cost = comp.costPerMin * minutes;
+      total += cost;
+      latencies.push(comp.latency);
+      if (comp.wer !== undefined) wer = comp.wer;
+      if (comp.mos !== undefined) mos = comp.mos;
+      breakdown.push({ name: comp.name, cost, sub: `$${comp.costPerMin.toFixed(4)}/min · ${comp.latency}ms` });
+    });
+    // VAD + turn siempre free
+    breakdown.push({ name: "Silero VAD + LiveKit TurnDetector", cost: 0, sub: "Free (open source CPU)" });
+  }
+
+  // Latency estimate: pipeline sum minus turn (parallel), +200ms network
+  let p50;
+  if (state.mode === "realtime") {
+    p50 = latencies[1] || 400;
+  } else {
+    // Sum components minus VAD/turn (parallel), add 200ms network + 100ms buffer
+    p50 = latencies.filter(l => l > 5).reduce((a, b) => a + b, 0) + 200;
+  }
+  const p95 = p50 * 1.7;
+
+  // Update DOM
+  document.getElementById("totalCost").textContent = "$" + Math.round(total).toLocaleString();
+  document.getElementById("perMinCost").textContent = `$${(total / minutes).toFixed(4)} USD por minuto`;
+  document.getElementById("latencyP50").textContent = "~" + Math.round(p50) + "ms";
+  document.getElementById("latencyP95").textContent = "~" + Math.round(p95 / 100) / 10 + "s";
+  if (wer !== null) {
+    const el = document.getElementById("werEstimate");
+    el.textContent = "~" + wer.toFixed(1) + "%";
+    el.className = "stat-value " + (wer < 5 ? "good" : wer < 10 ? "warn" : "bad");
+  }
+  if (mos !== null) {
+    document.getElementById("mosEstimate").textContent = mos.toFixed(1);
+  }
+
+  // Breakdown
+  const list = document.getElementById("breakdownList");
+  list.innerHTML = "";
+  breakdown.forEach(b => {
+    const row = document.createElement("div");
+    row.className = "breakdown-row";
+    row.innerHTML = `
+      <div>
+        <div class="name">${b.name}</div>
+        <div class="sub">${b.sub}</div>
+      </div>
+      <div class="price">$${Math.round(b.cost).toLocaleString()}</div>
+    `;
+    list.appendChild(row);
+  });
+
+  const totalRow = document.createElement("div");
+  totalRow.className = "breakdown-row";
+  totalRow.style.cssText = "border-top: 2px solid var(--border-strong); margin-top: 8px; padding-top: 12px;";
+  totalRow.innerHTML = `
+    <div class="name"><strong>TOTAL MENSUAL</strong></div>
+    <div class="price" style="color: var(--accent-cyan); font-size: 16px;">$${Math.round(total).toLocaleString()}</div>
+  `;
+  list.appendChild(totalRow);
+
+  document.getElementById("breakdownTotal").textContent = "$" + Math.round(total).toLocaleString();
+}
+
+// ============ EVENT HANDLERS ============
+document.querySelectorAll(".calc-tab").forEach(tab => {
+  tab.addEventListener("click", () => {
+    document.querySelectorAll(".calc-tab").forEach(t => t.classList.remove("active"));
+    tab.classList.add("active");
+    state.mode = tab.dataset.mode;
+    document.getElementById("pipelineSelectors").style.display = state.mode === "pipeline" ? "block" : "none";
+    document.getElementById("realtimeSelectors").style.display = state.mode === "realtime" ? "block" : "none";
+    document.getElementById("mixedSelectors").style.display = state.mode === "mixed" ? "block" : "none";
+    const desc = document.getElementById("modeDesc");
+    if (state.mode === "pipeline") desc.innerHTML = '<strong>Pipeline modular:</strong> máximo control y mejor costo. Cada componente se elige y se intercambia. Ideal para producción B2B con tool use.';
+    else if (state.mode === "realtime") desc.innerHTML = '<strong>Todo-en-uno:</strong> un solo modelo hace STT + LLM + TTS. Más simple pero más caro (~$0.35/min) y menos control sobre tool use.';
+    else desc.innerHTML = '<strong>Mixto:</strong> elegí los componentes custom. VAD/Turn son siempre Silero + LiveKit (gratis).';
+    calculate();
+  });
+});
+
+document.querySelectorAll(".preset").forEach(p => {
+  p.addEventListener("click", () => {
+    document.querySelectorAll(".preset").forEach(x => x.classList.remove("active"));
+    p.classList.add("active");
+    const presetId = p.dataset.preset;
+    if (presetId === "realtime") {
+      document.querySelector('.calc-tab[data-mode="realtime"]').click();
+    } else {
+      document.querySelector('.calc-tab[data-mode="pipeline"]').click();
+      const defaults = tierDefaults[presetId];
+      Object.keys(defaults).forEach(k => {
+        state.pipeline[k] = defaults[k];
+        const sel = document.querySelector(`select[data-component="${k}"]`);
+        if (sel) renderSelect(k, sel, defaults[k]);
+      });
+      const defaultsM = tierDefaultsMixed[presetId];
+      Object.keys(defaultsM).forEach(k => {
+        state.mixed[k] = defaultsM[k];
+        const map = { telephonyM: "telephony", sttM: "stt", llmM: "llm", ttsM: "tts", orchM: "orch" };
+        const sel = document.querySelector(`select[data-component="${k}"]`);
+        if (sel) renderSelect(map[k], sel, defaultsM[k]);
+      });
+    }
+    calculate();
+  });
+});
+
+// minutes slider
+const slider = document.getElementById("minutes");
+const minutesLabel = document.getElementById("minutesLabel");
+slider.addEventListener("input", () => {
+  state.minutes = parseInt(slider.value);
+  minutesLabel.textContent = state.minutes.toLocaleString();
+  calculate();
+});
+
+// component changes
+document.querySelectorAll(".comp-select").forEach(sel => {
+  sel.addEventListener("change", () => {
+    const key = sel.dataset.component;
+    const val = sel.value;
+    if (key.startsWith("telephony")) {
+      if (key === "telephony") state.pipeline.telephony = val;
+      else if (key === "telephonyR") state.realtime.telephonyR = val;
+      else if (key === "telephonyM") state.mixed.telephonyM = val;
+    } else if (key === "e2e") {
+      state.realtime.e2e = val;
+    } else if (key.endsWith("M")) {
+      state.mixed[key] = val;
+    } else {
+      state.pipeline[key] = val;
+    }
+    calculate();
+  });
+});
+
+// ============ INIT ============
+function init() {
+  // Render pipeline selects
+  ["telephony", "vad", "turn", "stt", "llm", "tts", "orch"].forEach(key => {
+    const sel = document.querySelector(`select[data-component="${key}"]`);
+    if (sel) renderSelect(key, sel, state.pipeline[key]);
+  });
+  // Render realtime selects
+  renderSelect("telephony", document.querySelector('select[data-component="telephonyR"]'), state.realtime.telephonyR);
+  renderSelect("e2e", document.querySelector('select[data-component="e2e"]'), state.realtime.e2e);
+  // Render mixed selects
+  ["telephonyM", "sttM", "llmM", "ttsM", "orchM"].forEach(key => {
+    const map = { telephonyM: "telephony", sttM: "stt", llmM: "llm", ttsM: "tts", orchM: "orch" };
+    const cfgKey = map[key];
+    const sel = document.querySelector(`select[data-component="${key}"]`);
+    if (sel) renderSelect(cfgKey, sel, state.mixed[key]);
+  });
+  calculate();
+}
+
+init();
+</script>
+</body>
+</html>
