@@ -1,0 +1,1119 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Stack Óptimo de Voz AI para ADA · SimpliRoute</title>
+<style>
+:root {
+  --bg-0: #050810;
+  --bg-1: #0a0f1c;
+  --bg-2: #111827;
+  --bg-3: #1a2236;
+  --border: rgba(255, 255, 255, 0.08);
+  --border-strong: rgba(255, 255, 255, 0.16);
+  --text-0: #f3f4f6;
+  --text-1: #d1d5db;
+  --text-2: #9ca3af;
+  --text-3: #6b7280;
+  --cyan: #06b6d4;
+  --blue: #3b82f6;
+  --purple: #a855f7;
+  --green: #10b981;
+  --yellow: #eab308;
+  --orange: #f97316;
+  --red: #ef4444;
+  --pink: #ec4899;
+  --grad-1: linear-gradient(135deg, #06b6d4 0%, #3b82f6 50%, #a855f7 100%);
+  --grad-warm: linear-gradient(135deg, #f97316 0%, #ec4899 100%);
+  --grad-cool: linear-gradient(135deg, #06b6d4 0%, #10b981 100%);
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Inter", "Segoe UI", sans-serif;
+  background: var(--bg-0);
+  color: var(--text-0);
+  line-height: 1.5;
+  overflow-x: hidden;
+}
+button { font-family: inherit; }
+.slide {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 80px 60px;
+  position: relative;
+  overflow: hidden;
+  border-bottom: 1px solid var(--border);
+}
+.slide::before {
+  content: "";
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background:
+    radial-gradient(at 20% 20%, rgba(6, 182, 212, 0.08) 0px, transparent 50%),
+    radial-gradient(at 80% 80%, rgba(168, 85, 247, 0.06) 0px, transparent 50%);
+  pointer-events: none;
+  z-index: 0;
+}
+.slide-content {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  max-width: 1280px;
+}
+.slide-num {
+  position: absolute;
+  top: 32px; left: 60px;
+  font-family: "JetBrains Mono", monospace;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--cyan);
+  padding: 4px 12px;
+  border: 1px solid rgba(6, 182, 212, 0.3);
+  border-radius: 6px;
+  background: rgba(6, 182, 212, 0.06);
+  letter-spacing: 0.5px;
+  z-index: 2;
+}
+.slide-title {
+  font-size: clamp(30px, 4.5vw, 52px);
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  line-height: 1.05;
+  margin-bottom: 20px;
+}
+.slide-title .grad {
+  background: var(--grad-1);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+.slide-subtitle {
+  font-size: clamp(15px, 1.6vw, 19px);
+  color: var(--text-2);
+  max-width: 760px;
+  margin-bottom: 28px;
+  line-height: 1.6;
+}
+.slide-eyebrow {
+  display: inline-block;
+  font-family: "JetBrains Mono", monospace;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--cyan);
+  padding: 4px 10px;
+  border-radius: 4px;
+  background: rgba(6, 182, 212, 0.1);
+  border: 1px solid rgba(6, 182, 212, 0.25);
+  margin-bottom: 14px;
+  letter-spacing: 0.6px;
+  text-transform: uppercase;
+}
+.card {
+  background: rgba(255, 255, 255, 0.025);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 24px;
+  backdrop-filter: blur(12px);
+  position: relative;
+  overflow: hidden;
+}
+.card.glow {
+  border-color: rgba(6, 182, 212, 0.3);
+  background: linear-gradient(135deg, rgba(6, 182, 212, 0.06), transparent);
+  box-shadow: 0 0 40px rgba(6, 182, 212, 0.1);
+}
+.card.warm { border-color: rgba(249, 115, 22, 0.3); background: linear-gradient(135deg, rgba(249, 115, 22, 0.06), transparent); }
+.card.purple { border-color: rgba(168, 85, 247, 0.3); background: linear-gradient(135deg, rgba(168, 85, 247, 0.06), transparent); }
+.card.green { border-color: rgba(16, 185, 129, 0.3); background: linear-gradient(135deg, rgba(16, 185, 129, 0.06), transparent); }
+.card .corner {
+  position: absolute;
+  top: 12px; right: 12px;
+  font-family: "JetBrains Mono", monospace;
+  font-size: 10px;
+  color: var(--text-3);
+  padding: 3px 6px;
+  border-radius: 4px;
+  background: rgba(0,0,0,0.3);
+  letter-spacing: 0.5px;
+}
+.nav-bar {
+  position: fixed;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 14px;
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(20px);
+  border: 1px solid var(--border-strong);
+  border-radius: 100px;
+  z-index: 100;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+}
+.nav-btn {
+  width: 32px; height: 32px;
+  border-radius: 50%;
+  border: 1px solid var(--border);
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--text-1);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s;
+  font-size: 14px;
+}
+.nav-btn:hover { background: rgba(6, 182, 212, 0.15); border-color: var(--cyan); color: var(--cyan); }
+.nav-counter {
+  font-family: "JetBrains Mono", monospace;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-1);
+  min-width: 60px;
+  text-align: center;
+}
+.nav-progress { height: 3px; background: var(--border); border-radius: 2px; width: 100px; overflow: hidden; }
+.nav-progress-bar { height: 100%; background: var(--grad-1); transition: width 0.3s; }
+.hero-badge {
+  display: inline-block;
+  padding: 6px 14px;
+  border: 1px solid rgba(16, 185, 129, 0.4);
+  border-radius: 100px;
+  background: rgba(16, 185, 129, 0.08);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--green);
+  margin-bottom: 20px;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+}
+.hero-badge .dot {
+  display: inline-block;
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: var(--green);
+  margin-right: 8px;
+  box-shadow: 0 0 8px var(--green);
+  animation: pulse 2s infinite;
+}
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}
+.hero-meta {
+  display: flex;
+  gap: 12px;
+  margin-top: 24px;
+  font-size: 13px;
+  color: var(--text-3);
+  font-family: "JetBrains Mono", monospace;
+  flex-wrap: wrap;
+}
+.hero-meta span { padding: 4px 10px; border: 1px solid var(--border); border-radius: 6px; background: rgba(0,0,0,0.3); }
+.stats-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 14px;
+  margin-top: 20px;
+}
+.stat-card {
+  background: rgba(255, 255, 255, 0.025);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 18px;
+  text-align: left;
+}
+.stat-card .stat-num {
+  font-family: "JetBrains Mono", monospace;
+  font-size: 32px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  line-height: 1;
+  margin-bottom: 6px;
+}
+.stat-card.cyan .stat-num { background: var(--grad-1); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+.stat-card.green .stat-num { color: var(--green); }
+.stat-card.purple .stat-num { color: var(--purple); }
+.stat-card.warm .stat-num { color: var(--orange); }
+.stat-card .stat-label {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  color: var(--text-3);
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+.stat-card .stat-sub { font-size: 12px; color: var(--text-2); margin-top: 6px; }
+.comparison-grid {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  gap: 14px;
+  align-items: stretch;
+  margin-top: 24px;
+}
+@media (max-width: 900px) { .comparison-grid { grid-template-columns: 1fr; } .vs-badge { display: none; } }
+.vs-badge {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: "JetBrains Mono", monospace;
+  font-weight: 800;
+  font-size: 24px;
+  color: var(--text-3);
+  padding: 0 8px;
+}
+.comparison-side {
+  background: rgba(255, 255, 255, 0.025);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 24px;
+}
+.comparison-side h3 {
+  font-size: 20px;
+  margin-bottom: 4px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.tag {
+  display: inline-block;
+  font-size: 10px;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: 4px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+.tag-cyan { background: rgba(6, 182, 212, 0.15); color: var(--cyan); border: 1px solid rgba(6, 182, 212, 0.3); }
+.tag-purple { background: rgba(168, 85, 247, 0.15); color: var(--purple); border: 1px solid rgba(168, 85, 247, 0.3); }
+.comparison-side ul { list-style: none; margin-top: 12px; }
+.comparison-side li {
+  font-size: 13px;
+  padding: 5px 0;
+  color: var(--text-1);
+  display: flex;
+  gap: 8px;
+  border-bottom: 1px solid rgba(255,255,255,0.04);
+}
+.comparison-side li:last-child { border-bottom: none; }
+.comparison-side li .icon { color: var(--green); flex-shrink: 0; font-weight: 700; }
+.comparison-side li.bad .icon { color: var(--orange); }
+.comparison-side .big-num {
+  font-family: "JetBrains Mono", monospace;
+  font-size: 38px;
+  font-weight: 800;
+  margin: 10px 0 4px;
+  line-height: 1;
+}
+.comparison-side.winner {
+  border-color: rgba(6, 182, 212, 0.4);
+  background: linear-gradient(135deg, rgba(6, 182, 212, 0.06), transparent);
+  box-shadow: 0 0 40px rgba(6, 182, 212, 0.1);
+  position: relative;
+}
+.comparison-side.winner::after {
+  content: "★ GANADOR";
+  position: absolute;
+  top: 16px; right: 16px;
+  font-size: 10px;
+  font-weight: 700;
+  padding: 4px 10px;
+  border-radius: 6px;
+  background: var(--grad-1);
+  color: white;
+  letter-spacing: 0.6px;
+}
+.pipeline-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+  gap: 10px;
+  margin-bottom: 6px;
+}
+.pipeline-node {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 12px 10px;
+  text-align: center;
+}
+.pipeline-node.recommended {
+  border-color: var(--cyan);
+  background: rgba(6, 182, 212, 0.08);
+  box-shadow: 0 0 20px rgba(6, 182, 212, 0.15);
+}
+.pipeline-node .cat {
+  font-family: "JetBrains Mono", monospace;
+  font-size: 9px;
+  color: var(--text-3);
+  letter-spacing: 0.6px;
+  text-transform: uppercase;
+  font-weight: 700;
+}
+.pipeline-node .name { font-size: 12px; font-weight: 700; margin: 4px 0; color: var(--text-0); }
+.pipeline-node .cost { font-family: "JetBrains Mono", monospace; font-size: 10px; color: var(--green); font-weight: 600; }
+.pipeline-arrow {
+  display: flex;
+  justify-content: center;
+  color: var(--text-3);
+  font-size: 13px;
+  margin: 0;
+}
+.tiers-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 14px;
+  margin-top: 24px;
+}
+@media (max-width: 900px) { .tiers-grid { grid-template-columns: 1fr; } }
+.tier {
+  background: rgba(255, 255, 255, 0.025);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 22px;
+  position: relative;
+}
+.tier.tier-1 { border-color: rgba(6, 182, 212, 0.4); background: linear-gradient(135deg, rgba(6, 182, 212, 0.05), transparent); }
+.tier.tier-2 { border-color: rgba(168, 85, 247, 0.4); background: linear-gradient(135deg, rgba(168, 85, 247, 0.05), transparent); }
+.tier.tier-3 { border-color: rgba(16, 185, 129, 0.4); background: linear-gradient(135deg, rgba(16, 185, 129, 0.05), transparent); }
+.tier .tier-tag {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  padding: 3px 8px;
+  border-radius: 4px;
+  display: inline-block;
+  margin-bottom: 10px;
+}
+.tier.tier-1 .tier-tag { background: rgba(6, 182, 212, 0.15); color: var(--cyan); }
+.tier.tier-2 .tier-tag { background: rgba(168, 85, 247, 0.15); color: var(--purple); }
+.tier.tier-3 .tier-tag { background: rgba(16, 185, 129, 0.15); color: var(--green); }
+.tier h3 { font-size: 17px; margin-bottom: 4px; }
+.tier .big { font-family: "JetBrains Mono", monospace; font-size: 30px; font-weight: 800; margin: 8px 0 4px; line-height: 1; }
+.tier.tier-1 .big { color: var(--cyan); }
+.tier.tier-2 .big { color: var(--purple); }
+.tier.tier-3 .big { color: var(--green); }
+.tier .per-min { font-size: 11px; color: var(--text-3); font-family: "JetBrains Mono", monospace; margin-bottom: 12px; }
+.tier ul { list-style: none; margin-top: 8px; }
+.tier li { font-size: 12px; padding: 4px 0; color: var(--text-1); display: flex; gap: 6px; }
+.tier li::before { content: "→"; color: var(--cyan); flex-shrink: 0; }
+.tier .when {
+  font-size: 11px;
+  color: var(--text-2);
+  padding-top: 10px;
+  margin-top: 10px;
+  border-top: 1px solid var(--border);
+  font-family: "JetBrains Mono", monospace;
+}
+.latency-bar {
+  margin-top: 20px;
+  padding: 20px;
+  background: rgba(0,0,0,0.3);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+}
+.latency-row {
+  display: grid;
+  grid-template-columns: 140px 1fr 70px;
+  align-items: center;
+  gap: 12px;
+  padding: 6px 0;
+  border-bottom: 1px solid rgba(255,255,255,0.04);
+}
+.latency-row:last-child { border-bottom: none; }
+.latency-row .lbl { font-size: 12px; font-weight: 600; }
+.latency-row .lbl small { display: block; font-size: 9px; color: var(--text-3); font-weight: 500; text-transform: uppercase; letter-spacing: 0.5px; margin-top: 2px; }
+.latency-row .bar { height: 20px; background: var(--bg-3); border-radius: 4px; overflow: hidden; }
+.latency-row .bar-fill {
+  height: 100%;
+  background: var(--grad-1);
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  padding: 0 8px;
+  font-size: 10px;
+  font-weight: 700;
+  color: white;
+}
+.latency-row .bar-fill.warm { background: var(--grad-warm); }
+.latency-row .bar-fill.cool { background: var(--grad-cool); }
+.latency-row .bar-fill.muted { background: linear-gradient(135deg, #4b5563, #6b7280); }
+.latency-row .ms { font-family: "JetBrains Mono", monospace; font-size: 13px; font-weight: 700; text-align: right; }
+.latency-total {
+  margin-top: 12px;
+  padding: 14px 18px;
+  background: rgba(6, 182, 212, 0.08);
+  border: 1px solid rgba(6, 182, 212, 0.3);
+  border-radius: 12px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.latency-total .label { font-size: 13px; color: var(--text-2); }
+.latency-total .total {
+  font-family: "JetBrains Mono", monospace;
+  font-size: 22px;
+  font-weight: 800;
+  background: var(--grad-1);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+.risks-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 12px;
+  margin-top: 20px;
+}
+.risk-card {
+  background: rgba(255, 255, 255, 0.025);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 16px;
+  border-left: 4px solid var(--yellow);
+}
+.risk-card.r-low { border-left-color: var(--green); }
+.risk-card.r-high { border-left-color: var(--red); }
+.risk-card .risk-num {
+  display: inline-block;
+  font-family: "JetBrains Mono", monospace;
+  font-size: 10px;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 4px;
+  background: rgba(234, 179, 8, 0.15);
+  color: var(--yellow);
+  margin-bottom: 6px;
+  letter-spacing: 0.5px;
+}
+.risk-card.r-low .risk-num { background: rgba(16, 185, 129, 0.15); color: var(--green); }
+.risk-card.r-high .risk-num { background: rgba(239, 68, 68, 0.15); color: var(--red); }
+.risk-card h4 { font-size: 13px; margin-bottom: 4px; }
+.risk-card p { font-size: 12px; color: var(--text-2); line-height: 1.5; }
+.refs-list {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 8px;
+  margin-top: 20px;
+}
+@media (max-width: 900px) { .refs-list { grid-template-columns: 1fr; } }
+.ref-item {
+  font-size: 12px;
+  padding: 8px 12px;
+  background: rgba(255,255,255,0.02);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  color: var(--text-1);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.ref-item .num {
+  font-family: "JetBrains Mono", monospace;
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--cyan);
+  padding: 2px 6px;
+  background: rgba(6, 182, 212, 0.1);
+  border-radius: 4px;
+  flex-shrink: 0;
+}
+.cta-section { text-align: center; padding: 40px 0; }
+.cta-section h2 {
+  font-size: clamp(28px, 4vw, 44px);
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  margin-bottom: 14px;
+  background: var(--grad-1);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+.cta-section p { font-size: 16px; color: var(--text-2); max-width: 580px; margin: 0 auto 24px; }
+.cta-buttons { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+.cta-btn {
+  padding: 14px 28px;
+  border-radius: 12px;
+  font-weight: 700;
+  font-size: 15px;
+  border: 1px solid var(--border-strong);
+  background: rgba(255,255,255,0.04);
+  color: var(--text-0);
+  cursor: pointer;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+.cta-btn.primary {
+  background: var(--grad-1);
+  border: none;
+  color: white;
+  box-shadow: 0 8px 24px rgba(6, 182, 212, 0.3);
+}
+.check-list { list-style: none; margin-top: 12px; }
+.check-list li {
+  font-size: 13px;
+  padding: 6px 0 6px 26px;
+  color: var(--text-1);
+  position: relative;
+  border-bottom: 1px solid rgba(255,255,255,0.04);
+}
+.check-list li::before {
+  content: "✓";
+  position: absolute;
+  left: 0;
+  color: var(--green);
+  font-weight: 700;
+}
+.grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+@media (max-width: 900px) { .grid-2 { grid-template-columns: 1fr; } }
+.grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+@media (max-width: 900px) { .grid-3 { grid-template-columns: 1fr; } }
+@media (max-width: 768px) {
+  .slide { padding: 60px 24px; }
+  .slide-num { top: 20px; left: 24px; }
+}
+</style>
+</head>
+<body>
+
+<!-- SLIDE 1: HERO -->
+<section class="slide" id="slide-1">
+  <span class="slide-num">01 · HERO</span>
+  <div class="slide-content">
+    <div class="hero-badge"><span class="dot"></span>INVESTIGACIÓN COMPLETADA · JULIO 2026</div>
+    <h1 class="slide-title">Stack Óptimo de <span class="grad">Voz AI</span><br>para llamadas B2B de <span style="background: var(--grad-1); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">ADA</span></h1>
+    <p class="slide-subtitle">Análisis exhaustivo de componentes, latencia, costos y trade-offs para optimizar las llamadas de voz del agente de SimpliRoute en español, portugués e inglés.</p>
+    <div class="stats-row">
+      <div class="stat-card cyan">
+        <div class="stat-label">Latencia objetivo</div>
+        <div class="stat-num">&lt;800ms</div>
+        <div class="stat-sub">voice-to-voice P50 · percibido como natural</div>
+      </div>
+      <div class="stat-card green">
+        <div class="stat-label">Costo Tier 1</div>
+        <div class="stat-num">$0.07</div>
+        <div class="stat-sub">USD por minuto · 3× más barato que E2E</div>
+      </div>
+      <div class="stat-card purple">
+        <div class="stat-label">Idiomas nativos</div>
+        <div class="stat-num">3</div>
+        <div class="stat-sub">ES · PT · EN con codeswitching en tiempo real</div>
+      </div>
+      <div class="stat-card warm">
+        <div class="stat-label">Modelos evaluados</div>
+        <div class="stat-num">40+</div>
+        <div class="stat-sub">STT · LLM · TTS · E2E · frameworks</div>
+      </div>
+    </div>
+    <div class="hero-meta">
+      <span>📊 Artificial Analysis Q2 2026</span>
+      <span>🧪 3 subagentes en paralelo</span>
+      <span>📚 20+ fuentes verificadas</span>
+    </div>
+  </div>
+</section>
+
+<!-- SLIDE 2: CONTEXTO -->
+<section class="slide" id="slide-2">
+  <span class="slide-num">02 · CONTEXTO</span>
+  <div class="slide-content">
+    <span class="slide-eyebrow">El problema</span>
+    <h2 class="slide-title">ADA necesita llamadas <span class="grad">más naturales</span>,<br>más rápidas y más baratas</h2>
+    <p class="slide-subtitle">El Delivery Excellence Agent contacta clientes B2B en logística. Esta investigación evalúa el espacio completo de modelos disponibles en Julio 2026 para encontrar la combinación óptima.</p>
+    <div class="grid-3">
+      <div class="card glow">
+        <div class="corner">DESAFÍO 1</div>
+        <h3 style="font-size: 17px; margin-bottom: 6px;">Latencia &lt; 1 segundo</h3>
+        <p style="font-size: 13px; color: var(--text-2);">Telecom research: &gt;800ms P95 produce <strong style="color: var(--red);">18–30% abandono</strong> en llamadas salientes B2B. Necesitamos stack que sienta humano.</p>
+      </div>
+      <div class="card warm">
+        <div class="corner">DESAFÍO 2</div>
+        <h3 style="font-size: 17px; margin-bottom: 6px;">Multilingüe real</h3>
+        <p style="font-size: 13px; color: var(--text-2);">Español (México/Chile/España) + Portugués (Brasil) + Inglés con <strong style="color: var(--cyan);">codeswitching</strong>. No traducción — voces nativas y STT que entienda mezcla.</p>
+      </div>
+      <div class="card purple">
+        <div class="corner">DESAFÍO 3</div>
+        <h3 style="font-size: 17px; margin-bottom: 6px;">Tool use obligatorio</h3>
+        <p style="font-size: 13px; color: var(--text-2);">ADA ejecuta acciones reales (consultar TMS, reprogramar visitas, notificar conductores). El LLM debe tener <strong style="color: var(--purple);">function calling confiable</strong> &gt;90%.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SLIDE 3: PIPELINE vs E2E -->
+<section class="slide" id="slide-3">
+  <span class="slide-num">03 · ARQUITECTURA</span>
+  <div class="slide-content">
+    <span class="slide-eyebrow">Decisión arquitectónica</span>
+    <h2 class="slide-title">Pipeline modular <span style="color: var(--text-3);">vs</span> Todo-en-Uno</h2>
+    <p class="slide-subtitle">Dos arquitecturas posibles para llamadas de voz AI. La elección impacta costo, latencia, multilingüe y capacidad de integración.</p>
+    <div class="comparison-grid">
+      <div class="comparison-side winner">
+        <h3>🧩 Pipeline Modular <span class="tag tag-cyan">★ Recomendado</span></h3>
+        <div class="big-num" style="background: var(--grad-1); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">$0.07/min</div>
+        <p style="font-size: 12px; color: var(--text-3); margin-bottom: 8px;">VAD → STT → LLM → TTS</p>
+        <ul>
+          <li><span class="icon">✓</span> Tool use robusto con LLM dedicado</li>
+          <li><span class="icon">✓</span> 3–4× más barato a escala</li>
+          <li><span class="icon">✓</span> Multilingüe top (mezclar STT/TTS por idioma)</li>
+          <li><span class="icon">✓</span> Observabilidad total · debug simple</li>
+          <li><span class="icon">✓</span> Sin vendor lock-in · intercambiable</li>
+          <li><span class="icon">✓</span> Latencia P50 lograble: 700–800ms</li>
+          <li class="bad"><span class="icon">~</span> Más piezas que orquestar</li>
+        </ul>
+      </div>
+      <div class="vs-badge">VS</div>
+      <div class="comparison-side">
+        <h3>🌐 Todo-en-Uno <span class="tag tag-purple">E2E speech-to-speech</span></h3>
+        <div class="big-num" style="color: var(--orange);">$0.35/min</div>
+        <p style="font-size: 12px; color: var(--text-3); margin-bottom: 8px;">Un solo modelo · OpenAI Realtime / Gemini Live</p>
+        <ul>
+          <li><span class="icon">✓</span> Más simple de implementar</li>
+          <li><span class="icon">✓</span> Backchanneling nativo ("mhm", "ya")</li>
+          <li><span class="icon">✓</span> Latencia P50 más baja (~400ms)</li>
+          <li><span class="icon">✓</span> Full duplex natural</li>
+          <li class="bad"><span class="icon">✗</span> <strong>5× más caro</strong> que pipeline</li>
+          <li class="bad"><span class="icon">✗</span> Tool use limitado / caja negra</li>
+          <li class="bad"><span class="icon">✗</span> Vendor lock-in fuerte</li>
+        </ul>
+      </div>
+    </div>
+    <p style="margin-top: 18px; font-size: 13px; color: var(--text-2); text-align: center;"><strong style="color: var(--cyan);">Veredicto:</strong> Para ADA en 2026, el pipeline modular gana por tool use, multilingüe y costo a escala. E2E solo si necesitás sub-400ms absoluto.</p>
+  </div>
+</section>
+
+<!-- SLIDE 4: STACK GANADOR -->
+<section class="slide" id="slide-4">
+  <span class="slide-num">04 · STACK GANADOR</span>
+  <div class="slide-content">
+    <span class="slide-eyebrow">Tier 1 · Recomendado para empezar</span>
+    <h2 class="slide-title">El stack que <span class="grad">gana</span></h2>
+    <p class="slide-subtitle">Cada componente es top-3 en su categoría según benchmarks Q2 2026. Es lo que usan Vapi, Retell y PolyAI en producción.</p>
+    <div style="margin-top: 24px;">
+      <div class="pipeline-row">
+        <div class="pipeline-node"><div class="cat">Telephony</div><div class="name">Telnyx / Twilio</div><div class="cost">$0.008/min</div></div>
+        <div class="pipeline-node"><div class="cat">Orquestador</div><div class="name">LiveKit Agents</div><div class="cost">$0.005/min</div></div>
+      </div>
+      <div class="pipeline-arrow">↓</div>
+      <div class="pipeline-row">
+        <div class="pipeline-node"><div class="cat">VAD</div><div class="name">Silero VAD</div><div class="cost" style="color: var(--cyan);">FREE</div></div>
+        <div class="pipeline-node"><div class="cat">Turn Detect</div><div class="name">LiveKit Turn v1-mini</div><div class="cost" style="color: var(--cyan);">FREE</div></div>
+      </div>
+      <div class="pipeline-arrow">↓</div>
+      <div class="pipeline-row">
+        <div class="pipeline-node recommended"><div class="cat">STT ⭐</div><div class="name">Deepgram Nova-3</div><div class="cost">$0.0077/min</div></div>
+        <div class="pipeline-node recommended"><div class="cat">LLM ⭐</div><div class="name">Claude Haiku 4.5</div><div class="cost">$0.02/min</div></div>
+        <div class="pipeline-node recommended"><div class="cat">TTS ⭐</div><div class="name">Cartesia Sonic 3.5</div><div class="cost">$0.03/min</div></div>
+      </div>
+    </div>
+    <div class="stats-row" style="margin-top: 28px;">
+      <div class="stat-card cyan">
+        <div class="stat-label">Costo por minuto</div>
+        <div class="stat-num">$0.07</div>
+        <div class="stat-sub">incluye todos los componentes</div>
+      </div>
+      <div class="stat-card green">
+        <div class="stat-label">A 10K min/mes</div>
+        <div class="stat-num">$707</div>
+        <div class="stat-sub">Listo para producción en 2-3 semanas</div>
+      </div>
+      <div class="stat-card purple">
+        <div class="stat-label">Latencia P50 est.</div>
+        <div class="stat-num">~750ms</div>
+        <div class="stat-sub">P95 ~1.3s · stack optimizado</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SLIDE 5: TIERS -->
+<section class="slide" id="slide-5">
+  <span class="slide-num">05 · EVOLUCIÓN</span>
+  <div class="slide-content">
+    <span class="slide-eyebrow">Migración según escala</span>
+    <h2 class="slide-title">Empezá en <span class="grad">Tier 1</span>, migrá cuando escales</h2>
+    <p class="slide-subtitle">El stack evoluciona con vos. Tier 1 para validar. Tier 2 cuando el costo importa. Tier 3 cuando querés control total.</p>
+    <div class="tiers-grid">
+      <div class="tier tier-1">
+        <span class="tier-tag">TIER 1 · MVP</span>
+        <h3>Start · 0–50K min/mes</h3>
+        <div class="big">$0.07/min</div>
+        <div class="per-min">~$700/mes @ 10K min</div>
+        <ul>
+          <li>100% managed · cero DevOps</li>
+          <li>Producción en 2-3 semanas</li>
+          <li>Deepgram + Haiku 4.5 + Cartesia</li>
+          <li>Telnyx + LiveKit Cloud</li>
+        </ul>
+        <div class="when">CUÁNDO: arrancar rápido, validar UX</div>
+      </div>
+      <div class="tier tier-2">
+        <span class="tier-tag">TIER 2 · ESCALA</span>
+        <h3>Growth · 50K–200K min/mes</h3>
+        <div class="big">$0.05/min</div>
+        <div class="per-min">~$2.5K/mes @ 50K min</div>
+        <ul>
+          <li>STT self-hosted (Parakeet)</li>
+          <li>Savings ~30% vs Tier 1</li>
+          <li>Data residency LATAM</li>
+          <li>WER en español MEJOR (3.4%)</li>
+        </ul>
+        <div class="when">CUÁNDO: costo STT &gt; $1K/mes</div>
+      </div>
+      <div class="tier tier-3">
+        <span class="tier-tag">TIER 3 · ADVANCED</span>
+        <h3>Scale · 200K+ min/mes</h3>
+        <div class="big">$0.03/min</div>
+        <div class="per-min">~$6K/mes @ 200K min</div>
+        <ul>
+          <li>Full self-host (Qwen3 + Kokoro)</li>
+          <li>Costo mínimo, control total</li>
+          <li>Custom voice cloning ADA</li>
+          <li>Cero vendor lock-in</li>
+        </ul>
+        <div class="when">CUÁNDO: equipo ML, data sovereignty</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SLIDE 6: LATENCY BUDGET -->
+<section class="slide" id="slide-6">
+  <span class="slide-num">06 · LATENCIA</span>
+  <div class="slide-content">
+    <span class="slide-eyebrow">El detalle que define la experiencia</span>
+    <h2 class="slide-title">Latency budget: <span class="grad">cada milisegundo cuenta</span></h2>
+    <p class="slide-subtitle">Así se distribuyen los ~750ms entre fin de habla humano y primer audio del agente en el stack Tier 1.</p>
+    <div class="latency-bar">
+      <div class="latency-row">
+        <div class="lbl">VAD + Endpointing<small>silero + livekit</small></div>
+        <div class="bar"><div class="bar-fill muted" style="width: 4%;">~30ms</div></div>
+        <div class="ms">30ms</div>
+      </div>
+      <div class="latency-row">
+        <div class="lbl">STT (Deepgram Nova-3)<small>streaming + final</small></div>
+        <div class="bar"><div class="bar-fill" style="width: 33%;">~250ms</div></div>
+        <div class="ms">250ms</div>
+      </div>
+      <div class="latency-row">
+        <div class="lbl">LLM TTFT (Haiku 4.5)<small>time to first token</small></div>
+        <div class="bar"><div class="bar-fill warm" style="width: 40%;">~300ms</div></div>
+        <div class="ms">300ms</div>
+      </div>
+      <div class="latency-row">
+        <div class="lbl">TTS TTFB (Cartesia Sonic)<small>primer chunk audio</small></div>
+        <div class="bar"><div class="bar-fill cool" style="width: 12%;">~90ms</div></div>
+        <div class="ms">90ms</div>
+      </div>
+      <div class="latency-row">
+        <div class="lbl">Network transport<small>webrtc + sip</small></div>
+        <div class="bar"><div class="bar-fill muted" style="width: 11%;">~80ms</div></div>
+        <div class="ms">80ms</div>
+      </div>
+      <div class="latency-total">
+        <div class="label"><strong>TOTAL P50 voice-to-voice</strong> · target sub-800ms</div>
+        <div class="total">~750ms</div>
+      </div>
+    </div>
+    <div style="margin-top: 18px; padding: 14px 18px; background: rgba(168, 85, 247, 0.06); border: 1px solid rgba(168, 85, 247, 0.2); border-radius: 12px;">
+      <strong style="color: var(--purple); font-size: 13px;">💡 Clave:</strong>
+      <span style="font-size: 13px; color: var(--text-2);"> El TTS arranca <strong>en paralelo al LLM</strong> (con 80-120 chars de buffer). Eso recorta ~300ms vs esperar a que el LLM termine toda la respuesta.</span>
+    </div>
+  </div>
+</section>
+
+<!-- SLIDE 7: LLM -->
+<section class="slide" id="slide-7">
+  <span class="slide-num">07 · LLM</span>
+  <div class="slide-content">
+    <span class="slide-eyebrow">El cerebro del agente</span>
+    <h2 class="slide-title">Claude Haiku 4.5 <span class="grad">es el rey</span> para voice agents</h2>
+    <p class="slide-subtitle">Lanzado en Octubre 2025, Anthropic lo diseñó explícitamente para casos de "real-time, low-latency" como customer service agents.</p>
+    <div class="grid-2" style="margin-top: 24px;">
+      <div class="card glow">
+        <div class="corner">POR QUÉ #1</div>
+        <h3 style="font-size: 18px; margin-bottom: 10px;">⚡ Velocidad + costo optimizados</h3>
+        <ul class="check-list">
+          <li>⅓ del costo de Sonnet 4 (≈$1/$5 por 1M tokens)</li>
+          <li>2× más rápido que Sonnet 4</li>
+          <li>TTFT ~300ms hosting normal · ~150ms en Groq</li>
+          <li>Supera a Sonnet 4 en computer use</li>
+        </ul>
+      </div>
+      <div class="card purple">
+        <div class="corner">POR QUÉ PARA ADA</div>
+        <h3 style="font-size: 18px; margin-bottom: 10px;">🧠 Function calling top-tier</h3>
+        <ul class="check-list">
+          <li>50-72% accuracy multi-turn (vs ~40% en modelos chicos)</li>
+          <li>Streaming nativo + structured output</li>
+          <li>Excelente en español/portugués (mejor que GPT-4o)</li>
+          <li>Anthropic prompt caching reduce costos en 90%</li>
+        </ul>
+      </div>
+    </div>
+    <div style="margin-top: 20px; padding: 18px; background: rgba(0,0,0,0.3); border: 1px solid var(--border); border-radius: 14px;">
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+        <div>
+          <div style="font-family: monospace; font-size: 11px; color: var(--text-3); margin-bottom: 4px;">ALTERNATIVA POR COSTO</div>
+          <strong style="color: var(--cyan); font-size: 15px;">Gemini 2.5 Flash-Lite</strong>
+          <p style="font-size: 12px; color: var(--text-2); margin-top: 4px;">TTFT más bajo del mercado (&lt;200ms), 5-8× más barato que OpenAI, 70+ idiomas. Caveat: function calling "quirky".</p>
+        </div>
+        <div>
+          <div style="font-family: monospace; font-size: 11px; color: var(--text-3); margin-bottom: 4px;">EXPERIMENTAL</div>
+          <strong style="color: var(--purple); font-size: 15px;">Mercury 2</strong>
+          <p style="font-size: 12px; color: var(--text-2); margin-top: 4px;">Diffusion-based, sub-100ms TTFT. Inception Labs. Disruptivo si funciona en producción.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SLIDE 8: STT -->
+<section class="slide" id="slide-8">
+  <span class="slide-num">08 · STT</span>
+  <div class="slide-content">
+    <span class="slide-eyebrow">Speech-to-Text</span>
+    <h2 class="slide-title">Deepgram Nova-3: <span class="grad">único en su clase</span> para LATAM</h2>
+    <p class="slide-subtitle">Ganador de la comparativa en español/portugués con codeswitching en tiempo real. Es lo que usan Vapi, Twilio, Spotify y NASA.</p>
+    <div class="stats-row" style="margin-top: 20px;">
+      <div class="stat-card cyan">
+        <div class="stat-label">WER streaming</div>
+        <div class="stat-num">6.84%</div>
+        <div class="stat-sub">54% mejor que competencia</div>
+      </div>
+      <div class="stat-card green">
+        <div class="stat-label">Velocidad</div>
+        <div class="stat-num">477×</div>
+        <div class="stat-sub">speed factor · el más rápido del top</div>
+      </div>
+      <div class="stat-card purple">
+        <div class="stat-label">Costo</div>
+        <div class="stat-num">$0.0077/min</div>
+        <div class="stat-sub">~$5/hora · $77/mes @ 10K min</div>
+      </div>
+      <div class="stat-card warm">
+        <div class="stat-label">Codeswitching</div>
+        <div class="stat-num">10 idiomas</div>
+        <div class="stat-sub">ES · PT · EN en tiempo real</div>
+      </div>
+    </div>
+    <div class="grid-2" style="margin-top: 20px;">
+      <div class="card">
+        <h3 style="font-size: 16px; margin-bottom: 8px; color: var(--cyan);">⚡ Keyterm Prompting</h3>
+        <p style="font-size: 13px; color: var(--text-2);">Pasás hasta <strong>100 términos custom</strong> (nombres de clientes, calles, SKUs de logística) y Nova-3 los transcribe con +625% de mejora. Sin reentrenamiento. Perfecto para vocabulario TMS de SimpliRoute.</p>
+      </div>
+      <div class="card">
+        <h3 style="font-size: 16px; margin-bottom: 8px; color: var(--purple);">🌐 Multilingual Real-Time</h3>
+        <p style="font-size: 13px; color: var(--text-2);">Es el <strong>único modelo de la industria</strong> con codeswitching ES ↔ EN ↔ PT en tiempo real. Cliente mezcla idiomas en la misma frase y Nova-3 transcribe fluidamente. <em style="color: var(--text-3);">8:1 preference vs Whisper en español</em>.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SLIDE 9: TTS -->
+<section class="slide" id="slide-9">
+  <span class="slide-num">09 · TTS</span>
+  <div class="slide-content">
+    <span class="slide-eyebrow">Text-to-Speech</span>
+    <h2 class="slide-title">Cartesia Sonic 3.5: <span class="grad">90ms TTFB</span> deja aire para el LLM</h2>
+    <p class="slide-subtitle">Ganador del trade-off calidad/latencia. Voice-bots con TTFB &gt;200ms "se sienten robóticos" — Cartesia deja 200+ ms de presupuesto para el LLM.</p>
+    <div class="stats-row" style="margin-top: 20px;">
+      <div class="stat-card cyan">
+        <div class="stat-label">TTFB</div>
+        <div class="stat-num">~90ms</div>
+        <div class="stat-sub">vs ElevenLabs Turbo ~275ms</div>
+      </div>
+      <div class="stat-card green">
+        <div class="stat-label">MOS (calidad)</div>
+        <div class="stat-num">4.7</div>
+        <div class="stat-sub">vs ElevenLabs Flash 4.8</div>
+      </div>
+      <div class="stat-card purple">
+        <div class="stat-label">Costo</div>
+        <div class="stat-num">$65-80</div>
+        <div class="stat-sub">por millón de chars · 50% menos que ElevenLabs</div>
+      </div>
+      <div class="stat-card warm">
+        <div class="stat-label">Idiomas nativos</div>
+        <div class="stat-num">15+</div>
+        <div class="stat-sub">incl. es-MX · es-CL · es-ES · pt-BR</div>
+      </div>
+    </div>
+    <div class="card glow" style="margin-top: 20px;">
+      <div class="corner">CLIENTES</div>
+      <h3 style="font-size: 16px; margin-bottom: 8px;">🏢 Battle-tested a escala</h3>
+      <p style="font-size: 13px; color: var(--text-2);">Microsoft · Quora (Poe) · Groq · <strong>PolyAI</strong> (reporta <strong style="color: var(--green);">+2.9% conversion lift</strong> usando Sonic 3.5). Voice cloning instantáneo con 15 segundos de audio — perfecto para branding de ADA sin tener que contratar locutores.</p>
+    </div>
+  </div>
+</section>
+
+<!-- SLIDE 10: RIESGOS -->
+<section class="slide" id="slide-10">
+  <span class="slide-num">10 · RIESGOS</span>
+  <div class="slide-content">
+    <span class="slide-eyebrow">Decisiones pendientes antes de comprometer</span>
+    <h2 class="slide-title">Riesgos y <span class="grad">validaciones obligatorias</span></h2>
+    <p class="slide-subtitle">No confíes solo en benchmarks del proveedor. Estos 5 puntos hay que validar con audio real de clientes antes de ir a producción.</p>
+    <div class="risks-grid">
+      <div class="risk-card r-high">
+        <span class="risk-num">ALTO · #1</span>
+        <h4>STT WER con audio real tuyo</h4>
+        <p>Deepgram reporta 8:1 vs Whisper en su benchmark. Test obligatorio con 50-100 utterances de clientes mexicanos/chilenos/brasileños con ruido ambiente.</p>
+      </div>
+      <div class="risk-card r-high">
+        <span class="risk-num">ALTO · #2</span>
+        <h4>Acentos regionales TTS</h4>
+        <p>ES-MX suena muy distinto a ES-CL o ES-ES. Probar voces nativas de Cartesia/ElevenLabs con los 4 acentos objetivo antes de elegir.</p>
+      </div>
+      <div class="risk-card">
+        <span class="risk-num">MEDIO · #3</span>
+        <h4>Function calling reliability</h4>
+        <p>Hacer 100+ test calls simuladas midiendo success rate de tool use en escenarios reales de logística (consultar TMS, reprogramar, notificar).</p>
+      </div>
+      <div class="risk-card">
+        <span class="risk-num">MEDIO · #4</span>
+        <h4>Compliance & data residency</h4>
+        <p>Si llaman clientes empresariales, asegurar opt-out de training data. Deepgram Nova-3 lo permite. Tier 2 (Parakeet self-host) es más seguro.</p>
+      </div>
+      <div class="risk-card">
+        <span class="risk-num">MEDIO · #5</span>
+        <h4>Telco en LATAM</h4>
+        <p>Twilio vs Telnyx vs Plivo tienen pricing distinto. Para LATAM, Telnyx suele ganar en pricing y regulación local.</p>
+      </div>
+      <div class="risk-card r-low">
+        <span class="risk-num">BAJO · RESUELTO</span>
+        <h4>VAD + Turn detection</h4>
+        <p>Silero VAD + LiveKit TurnDetector son estándar de facto, MIT licensed, validados por Vapi/Retell/Moshi. Sin riesgo acá.</p>
+      </div>
+    </div>
+    <div style="margin-top: 20px; padding: 16px; background: rgba(234, 179, 8, 0.06); border: 1px solid rgba(234, 179, 8, 0.25); border-radius: 12px;">
+      <strong style="color: var(--yellow); font-size: 14px;">⚠️ SLO objetivo para ADA:</strong>
+      <span style="font-size: 13px; color: var(--text-1); margin-left: 8px;"> P50 voice-to-voice &lt;800ms · P95 &lt;1.5s · WER &lt;8% en es/pt · MOS &gt;4.5 · Barge-in &gt;95% · Uptime &gt;99.5%</span>
+    </div>
+  </div>
+</section>
+
+<!-- SLIDE 11: REFERENCIAS -->
+<section class="slide" id="slide-11">
+  <span class="slide-num">11 · REFERENCIAS</span>
+  <div class="slide-content">
+    <span class="slide-eyebrow">Fuentes verificadas</span>
+    <h2 class="slide-title">De dónde sale <span class="grad">cada número</span></h2>
+    <p class="slide-subtitle">Todos los datos de esta presentación están respaldados por fuentes primarias. 20+ URLs verificadas en Julio 2026.</p>
+    <div class="refs-list">
+      <div class="ref-item"><span class="num">1</span> <a href="https://artificialanalysis.ai/leaderboards/models" target="_blank" style="color: inherit; text-decoration: none;">Artificial Analysis · LLM Leaderboard</a></div>
+      <div class="ref-item"><span class="num">2</span> <a href="https://artificialanalysis.ai/speech-to-text/non-streaming" target="_blank" style="color: inherit; text-decoration: none;">Artificial Analysis · STT Leaderboard</a></div>
+      <div class="ref-item"><span class="num">3</span> <a href="https://artificialanalysis.ai/text-to-speech/arena" target="_blank" style="color: inherit; text-decoration: none;">Artificial Analysis · TTS Arena</a></div>
+      <div class="ref-item"><span class="num">4</span> <a href="https://deepgram.com/learn/introducing-nova-3-speech-to-text-api" target="_blank" style="color: inherit; text-decoration: none;">Deepgram Nova-3 announcement (Feb 2025)</a></div>
+      <div class="ref-item"><span class="num">5</span> <a href="https://www.cartesia.ai/sonic" target="_blank" style="color: inherit; text-decoration: none;">Cartesia Sonic 3.5 launch</a></div>
+      <div class="ref-item"><span class="num">6</span> <a href="https://www.anthropic.com/news/claude-haiku-4-5" target="_blank" style="color: inherit; text-decoration: none;">Anthropic Claude Haiku 4.5 (Oct 2025)</a></div>
+      <div class="ref-item"><span class="num">7</span> <a href="https://huggingface.co/nvidia/parakeet-tdt-0.6b-v3" target="_blank" style="color: inherit; text-decoration: none;">NVIDIA Parakeet TDT 0.6B V3 (HF)</a></div>
+      <div class="ref-item"><span class="num">8</span> <a href="https://github.com/kyutai-labs/moshi" target="_blank" style="color: inherit; text-decoration: none;">Kyutai Moshi (full-duplex OSS)</a></div>
+      <div class="ref-item"><span class="num">9</span> <a href="https://github.com/livekit/agents" target="_blank" style="color: inherit; text-decoration: none;">LiveKit Agents (11.2k⭐)</a></div>
+      <div class="ref-item"><span class="num">10</span> <a href="https://github.com/pipecat-ai/pipecat" target="_blank" style="color: inherit; text-decoration: none;">Pipecat (10.6k⭐)</a></div>
+      <div class="ref-item"><span class="num">11</span> <a href="https://github.com/snakers4/silero-vad" target="_blank" style="color: inherit; text-decoration: none;">Silero VAD (9.5k⭐)</a></div>
+      <div class="ref-item"><span class="num">12</span> <a href="https://hamming.ai/resources/best-voice-agent-stack" target="_blank" style="color: inherit; text-decoration: none;">Hamming AI · 4M+ production calls analyzed</a></div>
+      <div class="ref-item"><span class="num">13</span> <a href="https://vapi.ai/blog/series-b" target="_blank" style="color: inherit; text-decoration: none;">Vapi $50M Series B · customers</a></div>
+      <div class="ref-item"><span class="num">14</span> <a href="https://www.daily.co/blog/advice-on-building-voice-ai-in-june-2025/" target="_blank" style="color: inherit; text-decoration: none;">Daily.co · Voice AI production guide</a></div>
+      <div class="ref-item"><span class="num">15</span> <a href="https://modal.com/blog/whisper-vs-deepgram" target="_blank" style="color: inherit; text-decoration: none;">Modal · 1-sec voice-to-voice stack benchmark</a></div>
+      <div class="ref-item"><span class="num">16</span> <a href="https://docs.livekit.io/agents/logic/turns/turn-detector/" target="_blank" style="color: inherit; text-decoration: none;">LiveKit TurnDetector docs</a></div>
+    </div>
+    <p style="margin-top: 20px; font-size: 12px; color: var(--text-3); text-align: center;">Documento completo: <code style="color: var(--cyan);">/opt/data/voice-ai-stack-investigacion.md</code> · 32KB · 20+ fuentes</p>
+  </div>
+</section>
+
+<!-- SLIDE 12: CTA -->
+<section class="slide" id="slide-12">
+  <span class="slide-num">12 · PRÓXIMOS PASOS</span>
+  <div class="slide-content">
+    <div class="cta-section">
+      <span class="slide-eyebrow">Recomendación</span>
+      <h2>Probemos en <span style="background: var(--grad-1); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">producción real</span></h2>
+      <p>Antes de comprometer el stack para ADA a escala, validemos con un prototipo funcional de 2 semanas. Misma receta que usamos para Meetily: build → test → ajustar → deploy.</p>
+      <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; max-width: 900px; margin: 32px auto; text-align: left;">
+        <div class="card">
+          <div class="corner">SEMANA 1</div>
+          <h4 style="font-size: 14px; margin-bottom: 6px; color: var(--cyan);">1. Build</h4>
+          <p style="font-size: 12px; color: var(--text-2);">LiveKit Agents local + Deepgram Nova-3 + Claude Haiku 4.5 + Cartesia Sonic 3.5 + número Twilio trial.</p>
+        </div>
+        <div class="card">
+          <div class="corner">SEMANA 2</div>
+          <h4 style="font-size: 14px; margin-bottom: 6px; color: var(--purple);">2. Test</h4>
+          <p style="font-size: 12px; color: var(--text-2);">50 calls de prueba con escenarios reales de logística. Medir WER, MOS, latencia P50/P95, costo por minuto.</p>
+        </div>
+        <div class="card">
+          <div class="corner">SEMANA 3+</div>
+          <h4 style="font-size: 14px; margin-bottom: 6px; color: var(--green);">3. Deploy</h4>
+          <p style="font-size: 12px; color: var(--text-2);">Si los SLOs se cumplen, deploy a staging. Si no, ajustar componentes antes de comprometer.</p>
+        </div>
+      </div>
+      <div class="cta-buttons">
+        <button class="cta-btn primary" onclick="window.scrollTo({top: 0, behavior: 'smooth'});">↑ Volver al inicio</button>
+        <a href="#slide-4" class="cta-btn">🧩 Ver stack ganador</a>
+        <a href="./calculator.html" class="cta-btn">🧮 Abrir calculadora interactiva</a>
+      </div>
+      <p style="margin-top: 32px; font-size: 13px; color: var(--text-3);">Por Ken · SimpliRoute · Julio 2026</p>
+    </div>
+  </div>
+</section>
+
+<!-- NAV BAR -->
+<div class="nav-bar">
+  <button class="nav-btn" onclick="goPrev()" title="Anterior (←)">←</button>
+  <span class="nav-counter" id="counter">1 / 12</span>
+  <div class="nav-progress"><div class="nav-progress-bar" id="progress" style="width: 8.3%;"></div></div>
+  <button class="nav-btn" onclick="goNext()" title="Siguiente (→)">→</button>
+</div>
+
+<script>
+const slides = document.querySelectorAll('.slide');
+const total = slides.length;
+let current = 0;
+
+function updateNav() {
+  document.getElementById('counter').textContent = (current + 1) + ' / ' + total;
+  document.getElementById('progress').style.width = ((current + 1) / total * 100) + '%';
+  slides[current].scrollIntoView({behavior: 'smooth'});
+}
+
+function goNext() {
+  if (current < total - 1) { current++; updateNav(); }
+}
+function goPrev() {
+  if (current > 0) { current--; updateNav(); }
+}
+
+// scroll observer to update current
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting && entry.intersectionRatio > 0.5) {
+      const idx = Array.from(slides).indexOf(entry.target);
+      if (idx !== -1) {
+        current = idx;
+        document.getElementById('counter').textContent = (current + 1) + ' / ' + total;
+        document.getElementById('progress').style.width = ((current + 1) / total * 100) + '%';
+      }
+    }
+  });
+}, {threshold: 0.5});
+slides.forEach(s => observer.observe(s));
+
+// keyboard nav
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'ArrowRight' || e.key === ' ' || e.key === 'PageDown') { e.preventDefault(); goNext(); }
+  else if (e.key === 'ArrowLeft' || e.key === 'PageUp') { e.preventDefault(); goPrev(); }
+  else if (e.key === 'Home') { e.preventDefault(); current = 0; updateNav(); }
+  else if (e.key === 'End') { e.preventDefault(); current = total - 1; updateNav(); }
+});
+
+updateNav();
+</script>
+
+</body>
+</html>
